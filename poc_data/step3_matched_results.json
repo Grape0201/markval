@@ -1,0 +1,533 @@
+{
+  "results": [
+    {
+      "check_item_label": "屋根 固定荷重",
+      "check_item_value": 1200.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "折板葺き（断熱材あり）",
+      "matched_source_value": 1200.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 1,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 464.1,
+        "x1": 466.8,
+        "y1": 473.1
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「屋根 固定荷重」の値1200 N/m²と単位が、ファイルBの「折板葺き（断熱材あり）」の値1200 N/m²と完全に一致しました。ファイルAのcontext「折板葺き＋断熱材」もファイルBのラベルと一致しています。"
+    },
+    {
+      "check_item_label": "床（2階） 固定荷重",
+      "check_item_value": 3500.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "OAフロア＋スラブ（t=130mm）",
+      "matched_source_value": 3500.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 1,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 640.3,
+        "x1": 480.7,
+        "y1": 649.3
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「床（2階） 固定荷重」の値3500 N/m²と単位が、ファイルBの「OAフロア＋スラブ（t=130mm）」の値3500 N/m²と完全に一致しました。ファイルAのcontext「OAフロア＋スラブ」もファイルBのラベルと一致しています。"
+    },
+    {
+      "check_item_label": "外壁 固定荷重",
+      "check_item_value": 800.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "ALC パネル（t=75mm）",
+      "matched_source_value": 800.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 90.9,
+        "x1": 450.1,
+        "y1": 99.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「外壁 固定荷重」の値800 N/m²と単位が、ファイルBの「ALC パネル（t=75mm）」の値800 N/m²と完全に一致しました。ファイルAのcontext「ALC 75mm」もファイルBのラベルと一致しています。"
+    },
+    {
+      "check_item_label": "内壁 固定荷重",
+      "check_item_value": 350.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "軽鉄間仕切り（石膏ボード両面）",
+      "matched_source_value": 350.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 134.9,
+        "x1": 466.7,
+        "y1": 143.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「内壁 固定荷重」の値350 N/m²と単位が、ファイルBの「軽鉄間仕切り（石膏ボード両面）」の値350 N/m²と完全に一致しました。ファイルAのcontext「軽鉄間仕切り」もファイルBのラベルと一致しています。"
+    },
+    {
+      "check_item_label": "事務室 積載荷重 (床用)",
+      "check_item_value": 2900.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "事務室 (床用)",
+      "matched_source_value": 2900.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 426.9,
+        "x1": 481.0,
+        "y1": 435.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「事務室 積載荷重 (床用)」の値2900 N/m²と単位が、ファイルBの「事務室 (床用)」の値2900 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "事務室 積載荷重 (大梁・柱用)",
+      "check_item_value": 1800.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "事務室 (大梁・柱用)",
+      "matched_source_value": 1800.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 426.9,
+        "x1": 481.0,
+        "y1": 435.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「事務室 積載荷重 (大梁・柱用)」の値1800 N/m²と単位が、ファイルBの「事務室 (大梁・柱用)」の値1800 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "事務室 積載荷重 (地震用)",
+      "check_item_value": 1300.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "事務室 (地震用)",
+      "matched_source_value": 1300.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 426.9,
+        "x1": 481.0,
+        "y1": 435.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「事務室 積載荷重 (地震用)」の値1300 N/m²と単位が、ファイルBの「事務室 (地震用)」の値1300 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "廊下・階段 積載荷重 (床用)",
+      "check_item_value": 3500.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "廊下・階段・玄関 (床用)",
+      "matched_source_value": 3500.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 448.9,
+        "x1": 481.0,
+        "y1": 457.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「廊下・階段 積載荷重 (床用)」の値3500 N/m²と単位が、ファイルBの「廊下・階段・玄関 (床用)」の値3500 N/m²と一致しました。ラベルに「玄関」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "廊下・階段 積載荷重 (大梁・柱用)",
+      "check_item_value": 2500.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "廊下・階段・玄関 (大梁・柱用)",
+      "matched_source_value": 2500.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 448.9,
+        "x1": 481.0,
+        "y1": 457.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「廊下・階段 積載荷重 (大梁・柱用)」の値2500 N/m²と単位が、ファイルBの「廊下・階段・玄関 (大梁・柱用)」の値2500 N/m²と一致しました。ラベルに「玄関」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "廊下・階段 積載荷重 (地震用)",
+      "check_item_value": 1500.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "廊下・階段・玄関 (地震用)",
+      "matched_source_value": 1500.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 448.9,
+        "x1": 481.0,
+        "y1": 457.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「廊下・階段 積載荷重 (地震用)」の値1500 N/m²と単位が、ファイルBの「廊下・階段・玄関 (地震用)」の値1500 N/m²と一致しました。ラベルに「玄関」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "屋上（一般） 積載荷重 (床用)",
+      "check_item_value": 1800.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "屋上（一般） (床用)",
+      "matched_source_value": 1800.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 514.9,
+        "x1": 481.0,
+        "y1": 523.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「屋上（一般） 積載荷重 (床用)」の値1800 N/m²と単位が、ファイルBの「屋上（一般） (床用)」の値1800 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "屋上（一般） 積載荷重 (大梁・柱用)",
+      "check_item_value": 1300.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "屋上（一般） (大梁・柱用)",
+      "matched_source_value": 1300.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 514.9,
+        "x1": 481.0,
+        "y1": 523.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「屋上（一般） 積載荷重 (大梁・柱用)」の値1300 N/m²と単位が、ファイルBの「屋上（一般） (大梁・柱用)」の値1300 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "屋上（一般） 積載荷重 (地震用)",
+      "check_item_value": 600.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "屋上（一般） (地震用)",
+      "matched_source_value": 600.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 514.9,
+        "x1": 481.0,
+        "y1": 523.9
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「屋上（一般） 積載荷重 (地震用)」の値600 N/m²と単位が、ファイルBの「屋上（一般） (地震用)」の値600 N/m²と完全に一致しました。"
+    },
+    {
+      "check_item_label": "機械室 積載荷重 (床用)",
+      "check_item_value": 5000.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "機械室・倉庫 (床用)",
+      "matched_source_value": 5000.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 536.9,
+        "x1": 492.3,
+        "y1": 545.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「機械室 積載荷重 (床用)」の値5000 N/m²と単位が、ファイルBの「機械室・倉庫 (床用)」の値5000 N/m²と一致しました。ラベルに「倉庫」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "機械室 積載荷重 (大梁・柱用)",
+      "check_item_value": 5000.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "機械室・倉庫 (大梁・柱用)",
+      "matched_source_value": 5000.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 536.9,
+        "x1": 492.3,
+        "y1": 545.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「機械室 積載荷重 (大梁・柱用)」の値5000 N/m²と単位が、ファイルBの「機械室・倉庫 (大梁・柱用)」の値5000 N/m²と一致しました。ラベルに「倉庫」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "機械室 積載荷重 (地震用)",
+      "check_item_value": 3000.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "機械室・倉庫 (地震用)",
+      "matched_source_value": 3000.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 2,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 536.9,
+        "x1": 492.3,
+        "y1": 545.9
+      },
+      "confidence": 0.9,
+      "ai_reasoning": "ファイルAの「機械室 積載荷重 (地震用)」の値3000 N/m²と単位が、ファイルBの「機械室・倉庫 (地震用)」の値3000 N/m²と一致しました。ラベルに「倉庫」の有無で若干の差異がありますが、数値と用途は一致しています。"
+    },
+    {
+      "check_item_label": "標準せん断力係数",
+      "check_item_value": 0.2,
+      "check_item_unit": "─",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、標準せん断力係数に関する直接的な数値データが見つかりませんでした。法令の条文から導かれる値であり、ファイルBは主に荷重の基準値や係数に特化しているため、直接的な一致はありません。"
+    },
+    {
+      "check_item_label": "地域係数",
+      "check_item_value": 1.0,
+      "check_item_unit": "─",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、地域係数に関する直接的な数値データが見つかりませんでした。法令の条文や告示から参照される値であり、ファイルBは主に荷重の基準値や係数に特化しているため、直接的な一致はありません。"
+    },
+    {
+      "check_item_label": "振動特性係数",
+      "check_item_value": 0.866,
+      "check_item_unit": "─",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、振動特性係数に関する直接的な数値データが見つかりませんでした。法令の条文や計算式から導かれる値であり、ファイルBは主に荷重の基準値や係数に特化しているため、直接的な一致はありません。"
+    },
+    {
+      "check_item_label": "地震層せん断力係数",
+      "check_item_value": 0.2,
+      "check_item_unit": "─",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、地震層せん断力係数に関する直接的な数値データが見つかりませんでした。法令の条文や計算式から導かれる値であり、ファイルBは主に荷重の基準値や係数に特化しているため、直接的な一致はありません。"
+    },
+    {
+      "check_item_label": "基準風速",
+      "check_item_value": 34.0,
+      "check_item_unit": "m/s",
+      "matched": true,
+      "matched_source_label": "基準風速 Vo (東京都)",
+      "matched_source_value": 34.0,
+      "matched_source_unit": "m/s",
+      "matched_source_page": 3,
+      "matched_source_bbox": {
+        "x0": 76.9,
+        "y0": 354.0,
+        "x1": 419.3,
+        "y1": 363.0
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「基準風速」の値34.0 m/sと単位が、ファイルBの「基準風速 Vo (東京都)」の値34.0 m/sと完全に一致しました。ファイルAのsource_hint「告示第1454号 東京都」もファイルBのcontextと一致しています。"
+    },
+    {
+      "check_item_label": "ガスト影響係数",
+      "check_item_value": 2.2,
+      "check_item_unit": "─",
+      "matched": true,
+      "matched_source_label": "ガスト影響係数 Gf (粗度Ⅲ H=10m)",
+      "matched_source_value": 2.2,
+      "matched_source_unit": "─",
+      "matched_source_page": 3,
+      "matched_source_bbox": {
+        "x0": 98.0,
+        "y0": 427.7,
+        "x1": 511.5,
+        "y1": 436.7
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「ガスト影響係数」の値2.2と単位が、ファイルBの「ガスト影響係数 Gf (粗度Ⅲ H=10m)」の値2.2と完全に一致しました。ファイルAのsource_hint「荷重指針 p.128 H=10m 粗度Ⅲ」もファイルBのラベルとcontextと一致しています。"
+    },
+    {
+      "check_item_label": "ピーク速度圧",
+      "check_item_value": 1780.0,
+      "check_item_unit": "N/m²",
+      "matched": true,
+      "matched_source_label": "ピーク速度圧 qp",
+      "matched_source_value": 1780.0,
+      "matched_source_unit": "N/m²",
+      "matched_source_page": 3,
+      "matched_source_bbox": {
+        "x0": 98.0,
+        "y0": 471.7,
+        "x1": 511.5,
+        "y1": 480.7
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「ピーク速度圧」の値1780 N/m²と単位が、ファイルBの「ピーク速度圧 qp」の値1780 N/m²と完全に一致しました。ファイルAのsource_hint「荷重指針 式(7.8) H=10m」もファイルBのcontextと一致しています。"
+    },
+    {
+      "check_item_label": "風力係数（壁面）",
+      "check_item_value": 1.2,
+      "check_item_unit": "─",
+      "matched": true,
+      "matched_source_label": "閉鎖型（矩形）総合（壁面） (Cf)",
+      "matched_source_value": 1.2,
+      "matched_source_unit": "─",
+      "matched_source_page": 3,
+      "matched_source_bbox": {
+        "x0": 81.1,
+        "y0": 289.0,
+        "x1": 416.2,
+        "y1": 298.0
+      },
+      "confidence": 0.95,
+      "ai_reasoning": "ファイルAの「風力係数（壁面）」の値1.2と単位が、ファイルBの「閉鎖型（矩形）総合（壁面） (Cf)」の値1.2と完全に一致しました。ファイルAのsource_hint「荷重指針 表7.3 閉鎖型建物」もファイルBのラベルとcontextと一致しています。"
+    },
+    {
+      "check_item_label": "SN400B 降伏点",
+      "check_item_value": 235.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN400Bの降伏点に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SN400B 引張強さ",
+      "check_item_value": 400.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN400Bの引張強さに関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SN400B 長期許容応力度",
+      "check_item_value": 156.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN400Bの長期許容応力度に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SN490B 降伏点",
+      "check_item_value": 325.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN490Bの降伏点に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SN490B 引張強さ",
+      "check_item_value": 490.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN490Bの引張強さに関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SN490B 長期許容応力度",
+      "check_item_value": 215.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SN490Bの長期許容応力度に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SS400 降伏点",
+      "check_item_value": 235.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SS400の降伏点に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SS400 引張強さ",
+      "check_item_value": 400.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SS400の引張強さに関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    },
+    {
+      "check_item_label": "SS400 長期許容応力度",
+      "check_item_value": 156.0,
+      "check_item_unit": "N/mm²",
+      "matched": false,
+      "matched_source_label": null,
+      "matched_source_value": null,
+      "matched_source_unit": null,
+      "matched_source_page": null,
+      "matched_source_bbox": null,
+      "confidence": 0.5,
+      "ai_reasoning": "ファイルBの参照データリストには、SS400の長期許容応力度に関する直接的な数値データが見つかりませんでした。ファイルAのsource_hint「令90条 表1」に該当する具体的な鋼材許容応力度の表はファイルBには含まれていません。"
+    }
+  ]
+}

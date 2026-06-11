@@ -1,0 +1,47 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv
+venv/
+ENV/
+
+# Environment configurations
+.env
+.env.local
+.env.*.local
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+backend/markval.db
+
+# Local uploads and generated outputs
+uploads/
+backend/uploads/
+backend/app/static/dist/
+
+# NodeJS / Bun
+node_modules/
+frontend/node_modules/
+frontend/dist/
+bun.lockb
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
