@@ -57,9 +57,6 @@ def get_llm():
     return primary_llm
 
 
-def generate_embeddings(texts: list[str]) -> list[None]:
-    return [None for _ in texts]
-
 
 def _select_document_provider() -> DocumentProvider:
     mode = os.environ.get("EXTRACTOR_PROVIDER", "local")
@@ -112,12 +109,6 @@ async def extract_source_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
     # Localize bounding boxes using provider alignment
     items_with_bboxes = provider.annotate(pdf_path, extracted_items)
     
-    # Compute embeddings in batch
-    texts_to_embed = [f"{item['label']} | context: {item['context_text']}" for item in items_with_bboxes]
-    embeddings = generate_embeddings(texts_to_embed)
-    
-    for item, emb in zip(items_with_bboxes, embeddings):
-        item["embedding"] = emb
 
     return items_with_bboxes
 

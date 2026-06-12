@@ -104,8 +104,7 @@ async def upload_source_document(
             value=float(item["value"]),
             unit=str(item["unit"]),
             context_text=str(item["context_text"]),
-            bbox=item.get("bbox"),
-            embedding=item.get("embedding")
+            bbox=item.get("bbox")
         )
         db.add(source_item)
         

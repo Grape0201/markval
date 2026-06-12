@@ -28,7 +28,6 @@ class SourceItem(Base):
     unit = Column(String(50), nullable=False)
     context_text = Column(String, nullable=False)
     bbox = Column(JSON, nullable=True)  # Store bounding box {x0, y0, x1, y1}
-    embedding = Column(JSON, nullable=True)  # Store list[float] for vector search
 
     document = relationship("SourceDocument", back_populates="items")
     match_results = relationship("MatchResult", back_populates="source_item", cascade="all, delete-orphan")
