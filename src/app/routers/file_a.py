@@ -86,8 +86,8 @@ async def create_session(
     uploads_dir.mkdir(parents=True, exist_ok=True)
     
     session_id = str(uuid.uuid4())
-    file_extension = Path(file.filename).suffix
-    saved_filename = f"{session_id}{file_extension}"
+    original_filename = Path(file.filename).name
+    saved_filename = f"{session_id}_{original_filename}"
     saved_path = uploads_dir / saved_filename
     
     try:
