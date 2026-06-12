@@ -4,6 +4,7 @@ from typing import cast
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+import hashlib
 from pydantic import BaseModel
 
 from app.db.database import get_db
@@ -53,6 +54,24 @@ async def upload_source_document(
             detail="Filename is missing"
         )
     
+    # Read file content and calculate hash
+    try:
+        content = file.file.read()
+        file_hash = hashlib.sha256(content).hexdigest()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to read file: {e}"
+        )
+
+    # Check for duplicate document
+    existing_doc = db.query(SourceDocument).filter(SourceDocument.file_hash == file_hash).first()
+    if existing_doc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"このファイルは既に登録されています。 (ID: {existing_doc.id}, タイトル: {existing_doc.title})"
+        )
+
     # Ensure uploads folder exists in project root directory
     base_dir = Path(__file__).resolve().parents[3]
     uploads_dir = base_dir / "uploads"
@@ -66,7 +85,6 @@ async def upload_source_document(
     
     try:
         with open(saved_path, "wb") as f:
-            content = file.file.read()
             f.write(content)
     except Exception as e:
         raise HTTPException(
@@ -96,7 +114,8 @@ async def upload_source_document(
         filename=file.filename,
         title=title or file.filename,
         version=version,
-        uploaded_at=datetime.now(timezone.utc)
+        uploaded_at=datetime.now(timezone.utc),
+        file_hash=file_hash
     )
     db.add(doc)
     

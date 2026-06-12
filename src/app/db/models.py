@@ -12,6 +12,7 @@ class SourceDocument(Base):
     title = Column(String(255), nullable=True)
     version = Column(String(50), nullable=True)
     uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    file_hash = Column(String(64), nullable=True, unique=True)
 
     # Relationship to source items
     items = relationship("SourceItem", back_populates="document", cascade="all, delete-orphan")
