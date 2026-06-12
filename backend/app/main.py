@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.db.database import SessionLocal
+from app.db.database import SessionLocal, initialize_database
 from app.db.models import PromptTemplate
 from app.routers import prompt_templates, file_b, file_a, match
 
@@ -18,6 +18,7 @@ load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    initialize_database()
     db = SessionLocal()
     try:
         count = db.query(PromptTemplate).count()
