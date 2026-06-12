@@ -19,6 +19,7 @@ class PageCheckItem(BaseModel):
     unit: str = Field(description="単位（例: 'N/m²', 'N/mm²', 'm/s'。無単位の場合は '─' または None）")
     context: str = Field(description="抽出箇所の前後の文脈テキスト（表の周囲や該当行の文字列を含める）")
     source_hint: str | None = Field(None, description="計算書に記載されている出典情報・参照先（例: '表4.1 ／ p.45', '令85条 表1', '令88条第1項' など。ない場合はNone）")
+    category: str = Field(description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。")
 
 class PageChecklist(BaseModel):
     items: list[PageCheckItem]
@@ -29,6 +30,7 @@ class PageSourceItem(BaseModel):
     value: float = Field(description="数値")
     unit: str = Field(description="単位（例: 'N/m²', 'm/s', 'N/mm²'。無単位の場合は '─' または None）")
     context_text: str = Field(description="前後の文脈テキストや適用条件")
+    category: str = Field(description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。")
 
 class PageSourceList(BaseModel):
     items: list[PageSourceItem]
@@ -72,16 +74,24 @@ def _select_document_provider() -> DocumentProvider:
         return LocalProvider()
 
 
-async def extract_source_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
+DEFAULT_CATEGORIES = ["固定荷重", "積載荷重", "積雪荷重", "風荷重", "地震荷重", "材料強度", "その他"]
+
+
+async def extract_source_items_from_pdf(pdf_path: Path, categories: list[str] | None = None) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
     llm = get_llm()
+
+    cats = categories or DEFAULT_CATEGORIES
+    cats_str = ", ".join(cats)
 
     prompt_b = ChatPromptTemplate.from_messages([
         ("system", (
             "あなたは建築構造設計の基準書・荷重指針（ファイルB）から標準的な数値データを抽出する専門家です。\n"
             "入力されたページテキスト（Markdown形式）から、各部位の固定荷重標準値、積載荷重、風荷重などのデータを抽出してください。\n"
-            "積載荷重は「床用」「大梁・柱用」「地震用」などの区分がある場合は、それぞれの数値を別々の項目として抽出してください（例: '事務室 積載荷重 (床用)', '事務室 積載荷重 (大梁・柱用)'）。"
+            "積載荷重は「床用」「大梁・柱用」「地震用」などの区分がある場合は、それぞれの数値を別々の項目として抽出してください（例: '事務室 積載荷重 (床用)', '事務室 積載荷重 (大梁・柱用)'）。\n"
+            f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
+            f"【カテゴリリスト】: {cats_str}"
         )),
         ("user", (
             "以下のテキストから、基準値やパラメータの数値を抽出してください。\n\n"
@@ -103,7 +113,8 @@ async def extract_source_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
                 "label": item.label,
                 "value": item.value,
                 "unit": item.unit,
-                "context_text": item.context_text
+                "context_text": item.context_text,
+                "category": item.category
             })
 
     # Localize bounding boxes using provider alignment
@@ -113,10 +124,13 @@ async def extract_source_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
     return items_with_bboxes
 
 
-async def extract_check_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
+async def extract_check_items_from_pdf(pdf_path: Path, categories: list[str] | None = None) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
     llm = get_llm()
+
+    cats = categories or DEFAULT_CATEGORIES
+    cats_str = ", ".join(cats)
 
     prompt_a = ChatPromptTemplate.from_messages([
         ("system", (
@@ -127,7 +141,9 @@ async def extract_check_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
             "- 積載荷重（室用途・加重種別（床用、大梁・柱用、地震用）ごとの N/m² 値）\n"
             "- 地震関連パラメータ（Co, Z, Rt, Ci 等の数値）\n"
             "- 風荷重パラメータ（Vo, Gf, qp, Cf 等の数値）\n"
-            "- 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）"
+            "- 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）\n\n"
+            f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
+            f"【カテゴリリスト】: {cats_str}"
         )),
         ("user", (
             "以下のテキストから、設計に使用した荷重・定数の入力値を抽出してください。\n\n"
@@ -150,7 +166,8 @@ async def extract_check_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
                 "value": item.value,
                 "unit": item.unit,
                 "context": item.context,
-                "source_hint": item.source_hint
+                "source_hint": item.source_hint,
+                "category": item.category
             })
 
     # Localize bounding boxes using provider alignment

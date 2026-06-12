@@ -63,6 +63,8 @@ def match_check_item(
     query = db.query(SourceItem)
     if document_id:
         query = query.filter(SourceItem.document_id == document_id)
+    if check_item.category:
+        query = query.filter(SourceItem.category == check_item.category)
     source_items = query.all()
 
     if not source_items:

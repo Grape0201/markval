@@ -35,6 +35,7 @@ class CheckItemResponse(BaseModel):
     page: int
     context: str
     source_hint: str | None
+    category: str | None = None
 
     class Config:
         from_attributes = True
@@ -45,6 +46,7 @@ class SourceItemInfo(BaseModel):
     unit: str
     page: int
     context_text: str
+    category: str | None = None
 
 class MatchResultResponse(BaseModel):
     id: str
@@ -70,6 +72,7 @@ class ResultStatusUpdate(BaseModel):
 async def create_session(
     file: UploadFile = File(...),
     prompt_template_id: str | None = Form(None),
+    categories: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
     if not file.filename:
@@ -97,8 +100,12 @@ async def create_session(
             detail=f"Failed to save file: {e}"
         )
         
+    cats_list = None
+    if categories:
+        cats_list = [c.strip() for c in categories.split(",") if c.strip()]
+
     try:
-        extracted_items = await extract_check_items_from_pdf(saved_path)
+        extracted_items = await extract_check_items_from_pdf(saved_path, categories=cats_list)
     except Exception as e:
         if saved_path.exists():
             saved_path.unlink()
@@ -126,7 +133,8 @@ async def create_session(
             bbox=item.get("bbox"),
             page=int(item["page"]),
             context=str(item["context"]),
-            source_hint=str(item["source_hint"]) if item.get("source_hint") else None
+            source_hint=str(item["source_hint"]) if item.get("source_hint") else None,
+            category=item.get("category")
         )
         db.add(check_item)
         
@@ -181,7 +189,8 @@ def get_session_items(session_id: str, db: Session = Depends(get_db)):
             bbox=cast(dict | None, item.bbox),
             page=cast(int, item.page),
             context=str(item.context),
-            source_hint=str(item.source_hint) if item.source_hint else None
+            source_hint=str(item.source_hint) if item.source_hint else None,
+            category=str(item.category) if item.category else None
         ))
     return results
 
@@ -215,7 +224,8 @@ def get_session_results(session_id: str, db: Session = Depends(get_db)):
                     value=cast(float, s_item.value),
                     unit=str(s_item.unit),
                     page=cast(int, s_item.page),
-                    context_text=str(s_item.context_text)
+                    context_text=str(s_item.context_text),
+                    category=str(s_item.category) if s_item.category else None
                 )
                 
         response_list.append(MatchResultResponse(
@@ -269,7 +279,8 @@ def update_result_status(result_id: str, payload: ResultStatusUpdate, db: Sessio
                 value=cast(float, s_item.value),
                 unit=str(s_item.unit),
                 page=cast(int, s_item.page),
-                context_text=str(s_item.context_text)
+                context_text=str(s_item.context_text),
+                category=str(s_item.category) if s_item.category else None
             )
             
     return MatchResultResponse(

@@ -82,7 +82,8 @@ def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
                     value=cast(float, s_item.value),
                     unit=str(s_item.unit),
                     page=cast(int, s_item.page),
-                    context_text=str(s_item.context_text)
+                    context_text=str(s_item.context_text),
+                    category=str(s_item.category) if s_item.category else None
                 )
                 
         response_list.append(MatchResultResponse(

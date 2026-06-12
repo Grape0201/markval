@@ -28,6 +28,7 @@ class SourceItem(Base):
     unit = Column(String(50), nullable=False)
     context_text = Column(String, nullable=False)
     bbox = Column(JSON, nullable=True)  # Store bounding box {x0, y0, x1, y1}
+    category = Column(String(100), nullable=True)
 
     document = relationship("SourceDocument", back_populates="items")
     match_results = relationship("MatchResult", back_populates="source_item", cascade="all, delete-orphan")
@@ -59,6 +60,7 @@ class CheckItem(Base):
     page = Column(Integer, nullable=False)
     context = Column(String, nullable=False)
     source_hint = Column(String(255), nullable=True)
+    category = Column(String(100), nullable=True)
 
     session = relationship("CheckSession", back_populates="check_items")
     match_results = relationship("MatchResult", back_populates="check_item", cascade="all, delete-orphan")

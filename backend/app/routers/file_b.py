@@ -33,6 +33,7 @@ class SourceItemResponse(BaseModel):
     unit: str
     context_text: str
     bbox: dict | None = None
+    category: str | None = None
 
     class Config:
         from_attributes = True
@@ -43,6 +44,7 @@ async def upload_source_document(
     file: UploadFile = File(...),
     title: str | None = Form(None),
     version: str | None = Form(None),
+    categories: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
     if not file.filename:
@@ -73,8 +75,12 @@ async def upload_source_document(
         )
         
     # Extract items
+    cats_list = None
+    if categories:
+        cats_list = [c.strip() for c in categories.split(",") if c.strip()]
+        
     try:
-        extracted_items = await extract_source_items_from_pdf(saved_path)
+        extracted_items = await extract_source_items_from_pdf(saved_path, categories=cats_list)
     except Exception as e:
         # Clean up file on failure
         if saved_path.exists():
@@ -104,7 +110,8 @@ async def upload_source_document(
             value=float(item["value"]),
             unit=str(item["unit"]),
             context_text=str(item["context_text"]),
-            bbox=item.get("bbox")
+            bbox=item.get("bbox"),
+            category=item.get("category")
         )
         db.add(source_item)
         
@@ -171,6 +178,7 @@ def get_source_document_items(document_id: str, db: Session = Depends(get_db)):
             value=cast(float, item.value),
             unit=str(item.unit),
             context_text=str(item.context_text),
-            bbox=cast(dict | None, item.bbox)
+            bbox=cast(dict | None, item.bbox),
+            category=str(item.category) if item.category else None
         ))
     return results

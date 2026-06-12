@@ -36,12 +36,14 @@ document.addEventListener('alpine:init', () => {
         // Forms
         formA: {
             file: null,
-            promptTemplateId: ''
+            promptTemplateId: '',
+            categories: '固定荷重, 積載荷重, 積雪荷重, 風荷重, 地震荷重, 材料強度, その他'
         },
         formB: {
             file: null,
             title: '',
-            version: ''
+            version: '',
+            categories: '固定荷重, 積載荷重, 積雪荷重, 風荷重, 地震荷重, 材料強度, その他'
         },
         
         // Notification
@@ -144,6 +146,9 @@ document.addEventListener('alpine:init', () => {
             if (this.formA.promptTemplateId) {
                 formData.append('prompt_template_id', this.formA.promptTemplateId);
             }
+            if (this.formA.categories) {
+                formData.append('categories', this.formA.categories);
+            }
             
             this.loading.uploadA = true;
             try {
@@ -167,6 +172,7 @@ document.addEventListener('alpine:init', () => {
                 
                 // Reset form
                 this.formA.file = null;
+                this.formA.categories = '固定荷重, 積載荷重, 積雪荷重, 風荷重, 地震荷重, 材料強度, その他';
                 const fileInput = document.getElementById('file-a-input');
                 if (fileInput) fileInput.value = '';
             } catch (err) {
@@ -297,6 +303,9 @@ document.addEventListener('alpine:init', () => {
             formData.append('file', this.formB.file);
             formData.append('title', this.formB.title || '');
             formData.append('version', this.formB.version || '');
+            if (this.formB.categories) {
+                formData.append('categories', this.formB.categories);
+            }
             
             this.loading.uploadB = true;
             try {
@@ -312,6 +321,7 @@ document.addEventListener('alpine:init', () => {
                 this.formB.file = null;
                 this.formB.title = '';
                 this.formB.version = '';
+                this.formB.categories = '固定荷重, 積載荷重, 積雪荷重, 風荷重, 地震荷重, 材料強度, その他';
                 const fileInput = document.getElementById('file-b-input');
                 if (fileInput) fileInput.value = '';
                 

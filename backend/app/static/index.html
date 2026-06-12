@@ -96,6 +96,12 @@
                                 </select>
                             </div>
 
+                            <!-- Categories Config -->
+                            <div class="form-group">
+                                <label class="form-label" for="session-categories-input">抽出カテゴリ (カンマ区切り)</label>
+                                <input type="text" id="session-categories-input" class="form-input" placeholder="例: 固定荷重, 積載荷重, 風荷重..." x-model="formA.categories">
+                            </div>
+
                             <button class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" @click="uploadFileA" :disabled="loading.uploadA || !formA.file">
                                 <template x-if="!loading.uploadA">
                                     <span><i class="fa-solid fa-play"></i> アップロードして解析開始</span>
@@ -201,7 +207,12 @@
                                          :class="selectedItem && selectedItem.id === item.id ? 'active' : ''"
                                          @click="selectedItem = item">
                                         <div class="check-item-info">
-                                            <div class="check-item-label" x-text="item.label" :title="item.label"></div>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
+                                                <div class="check-item-label" x-text="item.label" :title="item.label" style="margin-bottom: 0;"></div>
+                                                <template x-if="item.category">
+                                                    <span class="badge" style="background: rgba(168, 85, 247, 0.12); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.25); font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 4px; font-weight: 500;" x-text="item.category"></span>
+                                                </template>
+                                            </div>
                                             <div class="check-item-values">
                                                 <span x-text="item.value"></span>
                                                 <span x-text="item.unit" style="font-size: 0.75rem; color: var(--text-muted);"></span>
@@ -248,7 +259,12 @@
                                     <!-- Detail Header -->
                                     <div class="detail-header" style="display: flex; justify-content: space-between; align-items: start;">
                                         <div>
-                                            <span style="font-size: 0.8rem; color: var(--accent-teal); font-weight: 600; text-transform: uppercase;" x-text="'PAGE ' + selectedItem.page"></span>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                                <span style="font-size: 0.8rem; color: var(--accent-teal); font-weight: 600; text-transform: uppercase;" x-text="'PAGE ' + selectedItem.page"></span>
+                                                <template x-if="selectedItem.category">
+                                                    <span class="badge" style="background: rgba(168, 85, 247, 0.12); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.25); font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 4px; font-weight: 500;" x-text="selectedItem.category"></span>
+                                                </template>
+                                            </div>
                                             <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-top: 0.15rem;" x-text="selectedItem.label"></h3>
                                         </div>
 
@@ -304,7 +320,12 @@
                                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
                                                             <div>
                                                                 <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">照合元データベース (ファイルB)</span>
-                                                                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);" x-text="matchResults[selectedItem.id].source_item.label"></h4>
+                                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem; margin-bottom: 0.25rem;">
+                                                                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;" x-text="matchResults[selectedItem.id].source_item.label"></h4>
+                                                                    <template x-if="matchResults[selectedItem.id].source_item.category">
+                                                                        <span class="badge" style="background: rgba(20, 184, 166, 0.12); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.25); font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 4px; font-weight: 500;" x-text="matchResults[selectedItem.id].source_item.category"></span>
+                                                                    </template>
+                                                                </div>
                                                                 <span style="font-size: 0.8rem; color: var(--accent-teal);" x-text="'基準書等: ' + (matchResults[selectedItem.id].source_item.context_text.substring(0,30) + '... (P.' + matchResults[selectedItem.id].source_item.page + ')')"></span>
                                                             </div>
                                                             <div style="text-align: right;">
@@ -413,6 +434,11 @@
                             <input type="text" id="doc-version" class="form-input" placeholder="例: 2024" x-model="formB.version">
                         </div>
 
+                        <div class="form-group">
+                            <label class="form-label" for="doc-categories-input">抽出カテゴリ (カンマ区切り)</label>
+                            <input type="text" id="doc-categories-input" class="form-input" placeholder="例: 固定荷重, 積載荷重, 風荷重..." x-model="formB.categories">
+                        </div>
+
                         <button class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" @click="uploadSourceDoc" :disabled="loading.uploadB || !formB.file">
                             <template x-if="!loading.uploadB">
                                 <span><i class="fa-solid fa-square-plus"></i> 登録し、数値を自動抽出</span>
@@ -476,7 +502,12 @@
                                                 <template x-for="item in docItems" :key="item.id">
                                                     <div style="background: rgba(0,0,0,0.2); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
                                                         <div style="min-width: 0; flex: 1;">
-                                                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="item.label"></div>
+                                                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.1rem;">
+                                                                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;" x-text="item.label"></div>
+                                                                <template x-if="item.category">
+                                                                    <span class="badge" style="background: rgba(20, 184, 166, 0.12); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.25); font-size: 0.6rem; padding: 0.02rem 0.25rem; border-radius: 3px; font-weight: 500;" x-text="item.category"></span>
+                                                                </template>
+                                                            </div>
                                                             <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="'P. ' + item.page + ' | Context: ' + (item.context_text.substring(0,35) + '...')"></div>
                                                         </div>
                                                         <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--accent-teal); white-space: nowrap;">
