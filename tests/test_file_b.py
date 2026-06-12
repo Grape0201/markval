@@ -81,3 +81,38 @@ def test_upload_source_document_duplicate(mock_extract, client, db_session):
         data={"title": "Different Document", "version": "1.0"}
     )
     assert response3.status_code == 201
+
+
+@patch("app.routers.file_b.extract_source_items_from_pdf", new_callable=AsyncMock)
+def test_upload_source_document_with_categories(mock_extract, client, db_session):
+    mock_extract.return_value = []
+    file_content = b"Dummy PDF content for categories testing"
+    file_name = "test_categories.pdf"
+    
+    # Upload with categories
+    response = client.post(
+        "/api/v1/source-documents",
+        files={"file": (file_name, io.BytesIO(file_content), "application/pdf")},
+        data={
+            "title": "Test Categories Document", 
+            "version": "1.0",
+            "categories": "固定荷重,  積載荷重"
+        }
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["filename"] == file_name
+    assert data["categories"] == ["固定荷重", "積載荷重"]
+
+    # Verify database record
+    doc = db_session.query(SourceDocument).filter(SourceDocument.id == data["id"]).first()
+    assert doc is not None
+    assert doc.categories == ["固定荷重", "積載荷重"]
+
+    # Verify GET list response
+    list_response = client.get("/api/v1/source-documents")
+    assert list_response.status_code == 200
+    list_data = list_response.json()
+    matched_doc = next((d for d in list_data if d["id"] == data["id"]), None)
+    assert matched_doc is not None
+    assert matched_doc["categories"] == ["固定荷重", "積載荷重"]

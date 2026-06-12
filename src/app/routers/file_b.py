@@ -20,6 +20,7 @@ class SourceDocumentResponse(BaseModel):
     version: str | None
     uploaded_at: datetime
     item_count: int
+    categories: list[str] | None = None
 
     class Config:
         from_attributes = True
@@ -115,7 +116,8 @@ async def upload_source_document(
         title=title or file.filename,
         version=version,
         uploaded_at=datetime.now(timezone.utc),
-        file_hash=file_hash
+        file_hash=file_hash,
+        categories=cats_list
     )
     db.add(doc)
     
@@ -143,7 +145,8 @@ async def upload_source_document(
         title=str(doc.title) if doc.title else None,
         version=str(doc.version) if doc.version else None,
         uploaded_at=datetime.now(timezone.utc),  # use timezone-aware datetime
-        item_count=len(extracted_items)
+        item_count=len(extracted_items),
+        categories=cast(list[str] | None, doc.categories)
     )
 
 
@@ -159,7 +162,8 @@ def list_source_documents(db: Session = Depends(get_db)):
             title=str(doc.title) if doc.title else None,
             version=str(doc.version) if doc.version else None,
             uploaded_at=cast(datetime, doc.uploaded_at),
-            item_count=item_count
+            item_count=item_count,
+            categories=cast(list[str] | None, doc.categories)
         ))
     return results
 

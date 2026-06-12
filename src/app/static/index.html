@@ -498,6 +498,12 @@
                                                 <h4 style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);" x-text="doc.title || doc.filename"></h4>
                                                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;" x-text="doc.version ? '版: ' + doc.version : ''"></div>
                                                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;" x-text="'登録日時: ' + formatDate(doc.uploaded_at)"></div>
+                                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;" x-show="doc.categories && doc.categories.length > 0">
+                                                    <span>カテゴリ:</span>
+                                                    <template x-for="cat in doc.categories" :key="cat">
+                                                        <span class="badge" style="background: rgba(168, 85, 247, 0.12); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.25); font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 4px; font-weight: 500;" x-text="cat"></span>
+                                                    </template>
+                                                </div>
                                             </div>
                                             <button class="btn btn-danger" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" @click.stop="deleteSourceDoc(doc.id)">
                                                 <i class="fa-solid fa-trash"></i> 削除
