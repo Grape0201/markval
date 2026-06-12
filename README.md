@@ -119,3 +119,9 @@ bash poc/poc-1/run_all.sh
 bash poc/poc-2/run_all.sh
 ```
 PDFから出現座標（bbox）を抽出し、照合結果に基づいてPDFへチェックマークと出典アノテーションを描画・出力する検証を行います。結果は `poc/poc_data/` 以下に出力されます。
+
+## テスト
+
+```bash
+PYTHONPATH=src uv run pytest  
+```

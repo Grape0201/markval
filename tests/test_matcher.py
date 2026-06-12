@@ -1,11 +1,11 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from langchain_core.runnables import RunnableLambda
 
 from app.db.database import Base
-from app.db.models import CheckItem, SourceItem, MatchResult
+from app.db.models import CheckItem, SourceItem
 from app.services.matcher import match_check_item, SingleMatchResponse
 
 # Test database setup
