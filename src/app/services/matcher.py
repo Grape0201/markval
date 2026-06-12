@@ -1,5 +1,5 @@
 import re
-from typing import cast
+from typing import cast, Any
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from langchain_core.prompts import ChatPromptTemplate
@@ -59,7 +59,8 @@ def calculate_candidate_score(check_item: CheckItem, item: SourceItem) -> float:
 async def match_check_item(
     db: Session,
     check_item: CheckItem,
-    document_ids: list[str] | None = None
+    document_ids: list[str] | None = None,
+    llm: Any = None
 ) -> MatchResult:
     query = db.query(SourceItem)
     if document_ids:
@@ -85,7 +86,8 @@ async def match_check_item(
     candidates_with_scores.sort(key=lambda x: x[0], reverse=True)
     top_candidates = [item for _, item in candidates_with_scores[:5]]
 
-    llm = get_llm()
+    if llm is None:
+        llm = get_llm()
     prompt = ChatPromptTemplate.from_messages([
         ("system", (
             "あなたは建築構造設計の計算書（ファイルA）と、その出典となる荷重指針や法令（ファイルB）の数値を照合する専門家です。\n"

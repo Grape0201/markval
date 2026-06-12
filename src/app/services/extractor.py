@@ -80,10 +80,15 @@ def _select_document_provider() -> DocumentProvider:
 DEFAULT_CATEGORIES = ["固定荷重", "積載荷重", "積雪荷重", "風荷重", "地震荷重", "材料強度", "その他"]
 
 
-async def extract_source_items_from_pdf(pdf_path: Path, categories: list[str] | None = None) -> list[dict[str, Any]]:
+async def extract_source_items_from_pdf(
+    pdf_path: Path,
+    categories: list[str] | None = None,
+    llm: Any = None
+) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
-    llm = get_llm()
+    if llm is None:
+        llm = get_llm()
 
     cats = categories or DEFAULT_CATEGORIES
     cats_str = ", ".join(cats)
@@ -139,10 +144,15 @@ async def extract_source_items_from_pdf(pdf_path: Path, categories: list[str] | 
     return items_with_bboxes
 
 
-async def extract_check_items_from_pdf(pdf_path: Path, categories: list[str] | None = None) -> list[dict[str, Any]]:
+async def extract_check_items_from_pdf(
+    pdf_path: Path,
+    categories: list[str] | None = None,
+    llm: Any = None
+) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
-    llm = get_llm()
+    if llm is None:
+        llm = get_llm()
 
     cats = categories or DEFAULT_CATEGORIES
     cats_str = ", ".join(cats)
