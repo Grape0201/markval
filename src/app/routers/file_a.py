@@ -81,7 +81,7 @@ async def create_session(
             detail="Filename is missing"
         )
         
-    base_dir = Path(__file__).resolve().parent.parent.parent
+    base_dir = Path(__file__).resolve().parents[3]
     uploads_dir = base_dir / "uploads"
     uploads_dir.mkdir(parents=True, exist_ok=True)
     
@@ -361,7 +361,7 @@ def export_annotated_pdf(session_id: str, db: Session = Depends(get_db)):
             "matched_source_page": s_page
         })
         
-    base_dir = Path(__file__).resolve().parent.parent.parent
+    base_dir = Path(__file__).resolve().parents[3]
     uploads_dir = base_dir / "uploads"
     output_filename = f"{session_id}_annotated.pdf"
     output_path = uploads_dir / output_filename

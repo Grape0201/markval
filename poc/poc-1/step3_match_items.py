@@ -51,8 +51,8 @@ def get_llm():
     return primary_llm
 
 def main() -> None:
-    workspace_dir = Path("/Users/shotaro/work/markval")
-    poc_data_dir = workspace_dir / "poc_data"
+    workspace_dir = Path(__file__).resolve().parents[2]
+    poc_data_dir = workspace_dir / "poc" / "poc_data"
     
     # Load structured items
     with open(poc_data_dir / "poc1_structured_a.json", "r", encoding="utf-8") as f:

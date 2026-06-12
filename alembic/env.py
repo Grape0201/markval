@@ -13,8 +13,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Add backend directory to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Add src directory to path to allow importing app module
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from app.db.database import Base, DATABASE_URL, engine  # noqa: E402
 

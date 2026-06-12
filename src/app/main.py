@@ -1,6 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add src directory to path to allow importing app module
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from pathlib import Path
 import uuid
 
 from dotenv import load_dotenv

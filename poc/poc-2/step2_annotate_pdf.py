@@ -263,8 +263,8 @@ def annotate_pdf_file_b(
 
 
 def main() -> None:
-    workspace_dir = Path("/Users/shotaro/work/markval")
-    poc_data_dir = workspace_dir / "poc_data"
+    workspace_dir = Path(__file__).resolve().parents[2]
+    poc_data_dir = workspace_dir / "poc" / "poc_data"
     bench_dir = workspace_dir / "bench"
     
     # Load structured File A with bboxes

@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 
 def main() -> None:
-    workspace_dir = Path("/Users/shotaro/work/markval")
-    poc_data_dir = workspace_dir / "poc_data"
+    workspace_dir = Path(__file__).resolve().parents[2]
+    poc_data_dir = workspace_dir / "poc" / "poc_data"
     
     # Load step 3 matched results
     with open(poc_data_dir / "poc1_matched_results.json", "r", encoding="utf-8") as f:

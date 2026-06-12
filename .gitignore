@@ -23,12 +23,11 @@ ENV/
 *.db
 *.sqlite
 *.sqlite3
-backend/markval.db
+markval.db
 
 # Local uploads and generated outputs
 uploads/
-backend/uploads/
-backend/app/static/dist/
+src/app/static/dist/
 
 # NodeJS / Bun
 node_modules/

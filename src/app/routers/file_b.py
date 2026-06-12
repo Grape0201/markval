@@ -53,8 +53,8 @@ async def upload_source_document(
             detail="Filename is missing"
         )
     
-    # Ensure uploads folder exists in parent directory
-    base_dir = Path(__file__).resolve().parent.parent.parent
+    # Ensure uploads folder exists in project root directory
+    base_dir = Path(__file__).resolve().parents[3]
     uploads_dir = base_dir / "uploads"
     uploads_dir.mkdir(parents=True, exist_ok=True)
     

@@ -40,9 +40,9 @@ def extract_pdf_to_markdown_pages(pdf_path: Path) -> dict:
     }
 
 def main() -> None:
-    workspace_dir = Path("/Users/shotaro/work/markval")
+    workspace_dir = Path(__file__).resolve().parents[2]
     bench_dir = workspace_dir / "bench"
-    poc_data_dir = workspace_dir / "poc_data"
+    poc_data_dir = workspace_dir / "poc" / "poc_data"
     
     poc_data_dir.mkdir(exist_ok=True)
     

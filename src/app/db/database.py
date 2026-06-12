@@ -2,8 +2,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Database path in the backend folder
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Database path in the project root folder
+BASE_DIR = Path(__file__).resolve().parents[3]
 DATABASE_URL = f"sqlite:///{BASE_DIR / 'markval.db'}"
 
 engine = create_engine(
