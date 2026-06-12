@@ -67,7 +67,7 @@ class ResultStatusUpdate(BaseModel):
 
 
 @router.post("/api/v1/sessions", response_model=CheckSessionResponse, status_code=status.HTTP_201_CREATED)
-def create_session(
+async def create_session(
     file: UploadFile = File(...),
     prompt_template_id: str | None = Form(None),
     db: Session = Depends(get_db)
@@ -98,7 +98,7 @@ def create_session(
         )
         
     try:
-        extracted_items = extract_check_items_from_pdf(saved_path)
+        extracted_items = await extract_check_items_from_pdf(saved_path)
     except Exception as e:
         if saved_path.exists():
             saved_path.unlink()

@@ -1,16 +1,14 @@
-import io
 import os
 from pathlib import Path
+from typing import Any
 from pydantic import BaseModel, Field
-from pypdf import PdfReader, PdfWriter
-from markitdown import MarkItDown
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from app.services.bbox_providers import (
-    BBoxProvider,
-    PdfPlumberBBoxProvider,
-    YomitokuBBoxProvider
+from app.services.document_providers import (
+    DocumentProvider,
+    LocalProvider,
+    YomitokuProvider,
 )
 
 # Pydantic schemas for File A (Checklist) structured extraction
@@ -63,51 +61,23 @@ def generate_embeddings(texts: list[str]) -> list[None]:
     return [None for _ in texts]
 
 
-def extract_pdf_to_markdown_pages(pdf_path: Path) -> list[dict]:
-    if not pdf_path.exists():
-        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+def _select_document_provider() -> DocumentProvider:
+    mode = os.environ.get("EXTRACTOR_PROVIDER", "local")
+    # Support the old env var name if set
+    if mode == "local" and os.environ.get("EXTRACTOR_BBOX_PROVIDER") == "pdfplumber":
+        mode = "local"
+    elif mode == "local" and os.environ.get("EXTRACTOR_BBOX_PROVIDER") == "yomitoku":
+        mode = "yomitoku"
 
-    reader = PdfReader(pdf_path)
-    markitdown_converter = MarkItDown()
-    pages_data = []
-
-    for idx in range(len(reader.pages)):
-        page_num = idx + 1
-        
-        # Write single page to a BytesIO stream
-        writer = PdfWriter()
-        writer.add_page(reader.pages[idx])
-        
-        pdf_stream = io.BytesIO()
-        writer.write(pdf_stream)
-        pdf_stream.seek(0)
-        
-        # Convert page to markdown
-        result = markitdown_converter.convert_stream(pdf_stream, mime_type="application/pdf")
-        markdown_text = result.text_content
-        
-        pages_data.append({
-            "page": page_num,
-            "markdown": markdown_text
-        })
-
-    return pages_data
-
-
-def find_bboxes_for_items(pdf_path: Path, items: list[dict]) -> list[dict]:
-    provider = _select_bbox_provider()
-    return provider.annotate(pdf_path, items)
-
-def _select_bbox_provider() -> BBoxProvider:
-    mode = os.environ.get("EXTRACTOR_BBOX_PROVIDER", "pdfplumber")
-    if mode == "pdfplumber":
-        return PdfPlumberBBoxProvider()
+    if mode == "yomitoku":
+        return YomitokuProvider()
     else:
-        return YomitokuBBoxProvider()
+        return LocalProvider()
 
 
-def extract_source_items_from_pdf(pdf_path: Path) -> list[dict]:
-    pages_data = extract_pdf_to_markdown_pages(pdf_path)
+async def extract_source_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
+    provider = _select_document_provider()
+    pages_data = await provider.extract_markdown_pages(pdf_path)
     llm = get_llm()
 
     prompt_b = ChatPromptTemplate.from_messages([
@@ -124,7 +94,7 @@ def extract_source_items_from_pdf(pdf_path: Path) -> list[dict]:
     ])
     chain_b = prompt_b | llm.with_structured_output(PageSourceList)
 
-    extracted_items = []
+    extracted_items: list[dict[str, Any]] = []
     for page_info in pages_data:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
@@ -139,8 +109,8 @@ def extract_source_items_from_pdf(pdf_path: Path) -> list[dict]:
                 "context_text": item.context_text
             })
 
-    # Localize bounding boxes using pdfplumber alignment
-    items_with_bboxes = find_bboxes_for_items(pdf_path, extracted_items)
+    # Localize bounding boxes using provider alignment
+    items_with_bboxes = provider.annotate(pdf_path, extracted_items)
     
     # Compute embeddings in batch
     texts_to_embed = [f"{item['label']} | context: {item['context_text']}" for item in items_with_bboxes]
@@ -152,8 +122,9 @@ def extract_source_items_from_pdf(pdf_path: Path) -> list[dict]:
     return items_with_bboxes
 
 
-def extract_check_items_from_pdf(pdf_path: Path) -> list[dict]:
-    pages_data = extract_pdf_to_markdown_pages(pdf_path)
+async def extract_check_items_from_pdf(pdf_path: Path) -> list[dict[str, Any]]:
+    provider = _select_document_provider()
+    pages_data = await provider.extract_markdown_pages(pdf_path)
     llm = get_llm()
 
     prompt_a = ChatPromptTemplate.from_messages([
@@ -175,7 +146,7 @@ def extract_check_items_from_pdf(pdf_path: Path) -> list[dict]:
     ])
     chain_a = prompt_a | llm.with_structured_output(PageChecklist)
 
-    extracted_items = []
+    extracted_items: list[dict[str, Any]] = []
     for page_info in pages_data:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
@@ -191,6 +162,6 @@ def extract_check_items_from_pdf(pdf_path: Path) -> list[dict]:
                 "source_hint": item.source_hint
             })
 
-    # Localize bounding boxes using pdfplumber alignment
-    items_with_bboxes = find_bboxes_for_items(pdf_path, extracted_items)
+    # Localize bounding boxes using provider alignment
+    items_with_bboxes = provider.annotate(pdf_path, extracted_items)
     return items_with_bboxes

@@ -1,12 +1,13 @@
-import json
+import io
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pdfplumber
+from markitdown import MarkItDown
+from pypdf import PdfReader, PdfWriter
 
 def _clean_and_parse_value(text: str) -> float | None:
     candidate = text.strip()
@@ -20,12 +21,49 @@ def _clean_and_parse_value(text: str) -> float | None:
         return None
 
 
-class BBoxProvider(ABC):
+class DocumentProvider(ABC):
     @abstractmethod
-    def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    async def extract_markdown_pages(self, pdf_path: Path) -> list[dict[str, Any]]:
+        """Extract markdown content for each page of the PDF."""
         raise NotImplementedError
 
-class PdfPlumberBBoxProvider(BBoxProvider):
+    @abstractmethod
+    def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Locate items on the PDF page and add bounding box (bbox) information."""
+        raise NotImplementedError
+
+
+class LocalProvider(DocumentProvider):
+    async def extract_markdown_pages(self, pdf_path: Path) -> list[dict[str, Any]]:
+        if not pdf_path.exists():
+            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+
+        reader = PdfReader(pdf_path)
+        markitdown_converter = MarkItDown()
+        pages_data = []
+
+        for idx in range(len(reader.pages)):
+            page_num = idx + 1
+            
+            # Write single page to a BytesIO stream
+            writer = PdfWriter()
+            writer.add_page(reader.pages[idx])
+            
+            pdf_stream = io.BytesIO()
+            writer.write(pdf_stream)
+            pdf_stream.seek(0)
+            
+            # Convert page to markdown
+            result = markitdown_converter.convert_stream(pdf_stream, mime_type="application/pdf")
+            markdown_text = result.text_content
+            
+            pages_data.append({
+                "page": page_num,
+                "markdown": markdown_text
+            })
+
+        return pages_data
+
     def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
@@ -110,14 +148,71 @@ class PdfPlumberBBoxProvider(BBoxProvider):
             
         return updated_items
 
-class YomitokuBBoxProvider(BBoxProvider):
-    def __init__(self):
+
+async def _call_yomitoku_api(pdf_path: Path) -> dict[str, Any]:
+    """
+    TODO: Implement actual Yomitoku OCR API call.
+    Currently uses dummy httpx call and returns mock OCR layout & markdown data.
+    """
+    async with httpx.AsyncClient():
+        # Dummy async call to simulate Yomitoku API call
+        # e.g., async with httpx.AsyncClient() as client:
+        #           res = await client.get("https://httpbin.org/delay/1")
+        # In a real implementation, we would post the PDF to Yomitoku OCR API:
+        # files = {"file": open(pdf_path, "rb")}
+        # res = await client.post("https://api.yomitoku.example/ocr", files=files)
         pass
 
+    # Return a mocked response matching the expected Yomitoku OCR response structure.
+    # Note: Yomitoku can return both markdown and layout box data.
+    try:
+        reader = PdfReader(pdf_path)
+        num_pages = len(reader.pages)
+    except Exception:
+        num_pages = 1
+
+    mock_pages = []
+    for i in range(num_pages):
+        page_num = i + 1
+        mock_pages.append({
+            "page": page_num,
+            "markdown": f"# Yomitoku OCR Page {page_num}\nThis is dummy text representing the extracted markdown from page {page_num}.\nExample target value: 100.0\n",
+            "data": {
+                "paragraphs": [
+                    {
+                        "contents": f"Example target value: 100.0 on page {page_num}",
+                        "box": [50.0, 100.0, 200.0, 120.0]  # [x0, y0, x1, y1]
+                    }
+                ],
+                "text_blocks": [],
+                "tables": []
+            }
+        })
+    
+    return {"pages": mock_pages}
+
+
+class YomitokuProvider(DocumentProvider):
+    def __init__(self) -> None:
+        self._cached_pages: list[dict[str, Any]] = []
+
+    async def extract_markdown_pages(self, pdf_path: Path) -> list[dict[str, Any]]:
+        # Call the dummy OCR API
+        api_response = await _call_yomitoku_api(pdf_path)
+        self._cached_pages = api_response.get("pages", [])
+        
+        # Format return value as list of {"page": int, "markdown": str}
+        pages_data = []
+        for page in self._cached_pages:
+            pages_data.append({
+                "page": page["page"],
+                "markdown": page.get("markdown", "")
+            })
+        return pages_data
+
     def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        payload = {"pages": []}  # TODO
-        pages = payload.get("pages", [])
-        entries_by_page = {page.get("page"): self._build_page_entries(page) for page in pages}
+        # Map page layouts from cached Yomitoku response
+        entries_by_page = {page.get("page"): self._build_page_entries(page) for page in self._cached_pages}
 
         updated_items: list[dict[str, Any]] = []
         for item in items:

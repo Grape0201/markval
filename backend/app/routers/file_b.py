@@ -39,7 +39,7 @@ class SourceItemResponse(BaseModel):
 
 
 @router.post("", response_model=SourceDocumentResponse, status_code=status.HTTP_201_CREATED)
-def upload_source_document(
+async def upload_source_document(
     file: UploadFile = File(...),
     title: str | None = Form(None),
     version: str | None = Form(None),
@@ -74,7 +74,7 @@ def upload_source_document(
         
     # Extract items
     try:
-        extracted_items = extract_source_items_from_pdf(saved_path)
+        extracted_items = await extract_source_items_from_pdf(saved_path)
     except Exception as e:
         # Clean up file on failure
         if saved_path.exists():
