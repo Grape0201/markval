@@ -1,13 +1,17 @@
 import io
 import os
-import re
 from pathlib import Path
 from pydantic import BaseModel, Field
 from pypdf import PdfReader, PdfWriter
 from markitdown import MarkItDown
-import pdfplumber
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from app.services.bbox_providers import (
+    BBoxProvider,
+    PdfPlumberBBoxProvider,
+    YomitokuBBoxProvider
+)
 
 # Pydantic schemas for File A (Checklist) structured extraction
 class PageCheckItem(BaseModel):
@@ -90,100 +94,16 @@ def extract_pdf_to_markdown_pages(pdf_path: Path) -> list[dict]:
     return pages_data
 
 
-def clean_and_parse_value(text: str) -> float | None:
-    text = text.strip()
-    if not re.match(r"^-?[0-9,]+(\.[0-9]+)?$", text):
-        return None
-    cleaned = text.replace(",", "")
-    try:
-        return float(cleaned)
-    except ValueError:
-        return None
-
-
 def find_bboxes_for_items(pdf_path: Path, items: list[dict]) -> list[dict]:
-    if not pdf_path.exists():
-        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+    provider = _select_bbox_provider()
+    return provider.annotate(pdf_path, items)
 
-    updated_items = []
-    
-    with pdfplumber.open(pdf_path) as pdf:
-        for item in items:
-            label = item["label"]
-            target_value = item["value"]
-            page_num = item["page"]
-            context = item.get("context") or item.get("context_text") or ""
-            
-            if page_num < 1 or page_num > len(pdf.pages):
-                item["bbox"] = None
-                updated_items.append(item)
-                continue
-                
-            page = pdf.pages[page_num - 1]
-            words = page.extract_words()
-            
-            # Group words to lines for context comparison
-            words_sorted = sorted(words, key=lambda w: (w["top"], w["x0"]))
-            lines = []
-            if words_sorted:
-                current_group = [words_sorted[0]]
-                for w in words_sorted[1:]:
-                    avg_top = sum(item["top"] for item in current_group) / len(current_group)
-                    if abs(w["top"] - avg_top) < 3.0:
-                        current_group.append(w)
-                    else:
-                        lines.append(current_group)
-                        current_group = [w]
-                lines.append(current_group)
-            
-            line_texts = []
-            line_mappings = []
-            for line in lines:
-                line_words_sorted = sorted(line, key=lambda w: w["x0"])
-                text = " ".join(w["text"] for w in line_words_sorted)
-                line_texts.append(text)
-                line_mappings.append(line_words_sorted)
-                
-            # Find candidate words representing target_value
-            candidates = []
-            for line_idx, line_words in enumerate(line_mappings):
-                for word in line_words:
-                    word_val = clean_and_parse_value(word["text"])
-                    if word_val is not None and abs(word_val - target_value) < 1e-5:
-                        candidates.append((word, line_texts[line_idx]))
-            
-            if not candidates:
-                item["bbox"] = None
-                updated_items.append(item)
-                continue
-            
-            # Disambiguate candidates using token intersection
-            best_word = None
-            best_score = -1.0
-            keywords = set(re.findall(r"\w+", label) + re.findall(r"\w+", context))
-            
-            for word, line_text in candidates:
-                line_tokens = set(re.findall(r"\w+", line_text))
-                matches = len(keywords.intersection(line_tokens))
-                score = float(matches)
-                if score > best_score:
-                    best_score = score
-                    best_word = word
-            
-            if best_word:
-                bbox = {
-                    "x0": round(float(best_word["x0"]), 1),
-                    "y0": round(float(best_word["top"]), 1),
-                    "x1": round(float(best_word["x1"]), 1),
-                    "y1": round(float(best_word["bottom"]), 1)
-                }
-                item["bbox"] = bbox
-            else:
-                item["bbox"] = None
-                
-            updated_items.append(item)
-            
-    return updated_items
+def _select_bbox_provider() -> BBoxProvider:
+    mode = os.environ.get("EXTRACTOR_BBOX_PROVIDER", "pdfplumber")
+    if mode == "pdfplumber":
+        return PdfPlumberBBoxProvider()
+    else:
+        return YomitokuBBoxProvider()
 
 
 def extract_source_items_from_pdf(pdf_path: Path) -> list[dict]:
