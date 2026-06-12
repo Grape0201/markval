@@ -801,3 +801,55 @@ header {
         height: auto;
     }
 }
+
+/* Custom Dropdown Styles for Source Doc Filter */
+.dropdown-menu-custom {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    width: 280px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    box-shadow: var(--shadow-glass);
+    z-index: 1000;
+    padding: 0.75rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.dropdown-header-custom {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.dropdown-item-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    transition: var(--transition-smooth);
+}
+
+.dropdown-item-custom:hover {
+    background: var(--bg-glass-hover);
+    color: var(--text-primary);
+}
+
+.dropdown-item-custom input[type="checkbox"] {
+    accent-color: var(--accent-purple);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+

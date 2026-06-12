@@ -169,7 +169,36 @@
                         </div>
 
                         <!-- Top actions -->
-                        <div style="display: flex; gap: 0.75rem;">
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <!-- Source Document Multi-Select Filter -->
+                            <div style="position: relative;" x-data="{ open: false }" @click.outside="open = false">
+                                <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;" @click="open = !open">
+                                    <i class="fa-solid fa-filter"></i>
+                                    <span>対象出典: </span>
+                                    <strong x-text="matchingSourceDocIds.length === 0 ? 'すべて' : matchingSourceDocIds.length + '件選択中'" style="color: var(--accent-teal);"></strong>
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 0.25rem;"></i>
+                                </button>
+                                <div x-show="open" class="dropdown-menu-custom" style="display: none;">
+                                    <div class="dropdown-header-custom">照合対象の出典文書</div>
+                                    <label class="dropdown-item-custom">
+                                        <input type="checkbox" :checked="matchingSourceDocIds.length === 0" @change="matchingSourceDocIds = []">
+                                        <span>すべての登録文書 (デフォルト)</span>
+                                    </label>
+                                    <div style="border-bottom: 1px solid var(--border-glass); margin: 0.25rem 0;"></div>
+                                    <div style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <template x-for="doc in sourceDocs" :key="doc.id">
+                                            <label class="dropdown-item-custom">
+                                                <input type="checkbox" :value="doc.id" x-model="matchingSourceDocIds">
+                                                <div style="display: flex; flex-direction: column; min-width: 0;">
+                                                    <span x-text="doc.title || doc.filename" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;"></span>
+                                                    <span x-text="'v' + doc.version" style="font-size: 0.7rem; color: var(--text-muted);" x-show="doc.version"></span>
+                                                </div>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Run Match button -->
                             <button class="btn btn-primary" @click="runMatching" :disabled="loading.matching || checkItems.length === 0">
                                 <template x-if="!loading.matching">

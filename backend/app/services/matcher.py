@@ -59,11 +59,11 @@ def calculate_candidate_score(check_item: CheckItem, item: SourceItem) -> float:
 async def match_check_item(
     db: Session,
     check_item: CheckItem,
-    document_id: str | None = None
+    document_ids: list[str] | None = None
 ) -> MatchResult:
     query = db.query(SourceItem)
-    if document_id:
-        query = query.filter(SourceItem.document_id == document_id)
+    if document_ids:
+        query = query.filter(SourceItem.document_id.in_(document_ids))
     if check_item.category:
         query = query.filter(SourceItem.category == check_item.category)
     source_items = query.all()

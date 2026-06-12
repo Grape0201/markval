@@ -13,6 +13,7 @@ router = APIRouter(tags=["match"])
 
 class MatchRequest(BaseModel):
     session_id: str
+    document_ids: list[str] | None = None
 
 
 @router.post("/api/v1/match", response_model=list[MatchResultResponse])
@@ -44,7 +45,7 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
     new_results = []
     for check_item in check_items:
         try:
-            result = await match_check_item(db, check_item)
+            result = await match_check_item(db, check_item, document_ids=payload.document_ids)
             setattr(result, "id", str(uuid.uuid4()))
             db.add(result)
             new_results.append(result)

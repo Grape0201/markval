@@ -14,6 +14,7 @@ document.addEventListener('alpine:init', () => {
         sourceDocs: [],
         selectedDoc: null,
         docItems: [], // items for selected doc (fetched on demand)
+        matchingSourceDocIds: [],
         
         // Prompts State
         promptTemplates: [],
@@ -111,6 +112,7 @@ document.addEventListener('alpine:init', () => {
             this.selectedItem = null;
             this.checkItems = [];
             this.matchResults = {};
+            this.matchingSourceDocIds = [];
             
             this.loading.sessions = true;
             try {
@@ -190,7 +192,10 @@ document.addEventListener('alpine:init', () => {
                 const res = await fetch('/api/v1/match', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: this.activeSession.id })
+                    body: JSON.stringify({ 
+                        session_id: this.activeSession.id,
+                        document_ids: this.matchingSourceDocIds.length > 0 ? this.matchingSourceDocIds : null
+                    })
                 });
                 if (!res.ok) {
                     const err = await res.json();
