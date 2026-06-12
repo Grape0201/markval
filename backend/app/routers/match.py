@@ -16,7 +16,7 @@ class MatchRequest(BaseModel):
 
 
 @router.post("/api/v1/match", response_model=list[MatchResultResponse])
-def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
+async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
     session_id = payload.session_id
     session = db.query(CheckSession).filter(CheckSession.id == session_id).first()
     if not session:
@@ -44,7 +44,7 @@ def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
     new_results = []
     for check_item in check_items:
         try:
-            result = match_check_item(db, check_item)
+            result = await match_check_item(db, check_item)
             setattr(result, "id", str(uuid.uuid4()))
             db.add(result)
             new_results.append(result)

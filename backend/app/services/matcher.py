@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from langchain_core.prompts import ChatPromptTemplate
 from app.db.models import CheckItem, SourceItem, MatchResult
 from app.services.extractor import get_llm
+from app.core.semaphores import get_llm_semaphore
 
 class SingleMatchResponse(BaseModel):
     matched: bool = Field(description="一致する項目が候補リストに見つかったかどうか")
@@ -55,7 +56,7 @@ def calculate_candidate_score(check_item: CheckItem, item: SourceItem) -> float:
     return num_score + text_score + hint_boost
 
 
-def match_check_item(
+async def match_check_item(
     db: Session,
     check_item: CheckItem,
     document_id: str | None = None
@@ -122,16 +123,18 @@ def match_check_item(
 
     chain = prompt | llm.with_structured_output(SingleMatchResponse)
     
+    semaphore = get_llm_semaphore()
     try:
-        response = chain.invoke({
-            "check_label": cast(str, check_item.label),
-            "check_value": cast(float, check_item.value),
-            "check_unit": cast(str, check_item.unit),
-            "check_page": cast(int, check_item.page),
-            "check_context": cast(str, check_item.context),
-            "check_hint": cast(str, check_item.source_hint) if check_item.source_hint else "なし",
-            "candidates_str": candidates_str
-        })
+        async with semaphore:
+            response = await chain.ainvoke({
+                "check_label": cast(str, check_item.label),
+                "check_value": cast(float, check_item.value),
+                "check_unit": cast(str, check_item.unit),
+                "check_page": cast(int, check_item.page),
+                "check_context": cast(str, check_item.context),
+                "check_hint": cast(str, check_item.source_hint) if check_item.source_hint else "なし",
+                "candidates_str": candidates_str
+            })
     except Exception as e:
         return MatchResult(
             check_item_id=check_item.id,

@@ -1,9 +1,12 @@
+import asyncio
 import os
 from pathlib import Path
 from typing import Any
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from app.core.semaphores import get_llm_semaphore
 
 from app.services.document_providers import (
     DocumentProvider,
@@ -101,14 +104,18 @@ async def extract_source_items_from_pdf(pdf_path: Path, categories: list[str] | 
     ])
     chain_b = prompt_b | llm.with_structured_output(PageSourceList)
 
-    extracted_items: list[dict[str, Any]] = []
-    for page_info in pages_data:
+    semaphore = get_llm_semaphore()
+
+    async def _extract_page(page_info: dict[str, Any]) -> list[dict[str, Any]]:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
         
-        result = chain_b.invoke({"text": markdown_text})
+        async with semaphore:
+            result = await chain_b.ainvoke({"text": markdown_text})
+            
+        page_items = []
         for item in result.items:
-            extracted_items.append({
+            page_items.append({
                 "page": page_num,
                 "label": item.label,
                 "value": item.value,
@@ -116,6 +123,14 @@ async def extract_source_items_from_pdf(pdf_path: Path, categories: list[str] | 
                 "context_text": item.context_text,
                 "category": item.category
             })
+        return page_items
+
+    tasks = [_extract_page(page_info) for page_info in pages_data]
+    pages_results = await asyncio.gather(*tasks)
+
+    extracted_items: list[dict[str, Any]] = []
+    for page_items in pages_results:
+        extracted_items.extend(page_items)
 
     # Localize bounding boxes using provider alignment
     items_with_bboxes = provider.annotate(pdf_path, extracted_items)
@@ -153,14 +168,18 @@ async def extract_check_items_from_pdf(pdf_path: Path, categories: list[str] | N
     ])
     chain_a = prompt_a | llm.with_structured_output(PageChecklist)
 
-    extracted_items: list[dict[str, Any]] = []
-    for page_info in pages_data:
+    semaphore = get_llm_semaphore()
+
+    async def _extract_page(page_info: dict[str, Any]) -> list[dict[str, Any]]:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
         
-        result = chain_a.invoke({"text": markdown_text})
+        async with semaphore:
+            result = await chain_a.ainvoke({"text": markdown_text})
+            
+        page_items = []
         for item in result.items:
-            extracted_items.append({
+            page_items.append({
                 "page": page_num,
                 "label": item.label,
                 "value": item.value,
@@ -169,6 +188,14 @@ async def extract_check_items_from_pdf(pdf_path: Path, categories: list[str] | N
                 "source_hint": item.source_hint,
                 "category": item.category
             })
+        return page_items
+
+    tasks = [_extract_page(page_info) for page_info in pages_data]
+    pages_results = await asyncio.gather(*tasks)
+
+    extracted_items: list[dict[str, Any]] = []
+    for page_items in pages_results:
+        extracted_items.extend(page_items)
 
     # Localize bounding boxes using provider alignment
     items_with_bboxes = provider.annotate(pdf_path, extracted_items)

@@ -9,6 +9,8 @@ import pdfplumber
 from markitdown import MarkItDown
 from pypdf import PdfReader, PdfWriter
 
+from app.core.semaphores import get_yomitoku_semaphore
+
 def _clean_and_parse_value(text: str) -> float | None:
     candidate = text.strip()
 
@@ -154,42 +156,44 @@ async def _call_yomitoku_api(pdf_path: Path) -> dict[str, Any]:
     TODO: Implement actual Yomitoku OCR API call.
     Currently uses dummy httpx call and returns mock OCR layout & markdown data.
     """
-    async with httpx.AsyncClient():
-        # Dummy async call to simulate Yomitoku API call
-        # e.g., async with httpx.AsyncClient() as client:
-        #           res = await client.get("https://httpbin.org/delay/1")
-        # In a real implementation, we would post the PDF to Yomitoku OCR API:
-        # files = {"file": open(pdf_path, "rb")}
-        # res = await client.post("https://api.yomitoku.example/ocr", files=files)
-        pass
+    semaphore = get_yomitoku_semaphore()
+    async with semaphore:
+        async with httpx.AsyncClient():
+            # Dummy async call to simulate Yomitoku API call
+            # e.g., async with httpx.AsyncClient() as client:
+            #           res = await client.get("https://httpbin.org/delay/1")
+            # In a real implementation, we would post the PDF to Yomitoku OCR API:
+            # files = {"file": open(pdf_path, "rb")}
+            # res = await client.post("https://api.yomitoku.example/ocr", files=files)
+            pass
 
-    # Return a mocked response matching the expected Yomitoku OCR response structure.
-    # Note: Yomitoku can return both markdown and layout box data.
-    try:
-        reader = PdfReader(pdf_path)
-        num_pages = len(reader.pages)
-    except Exception:
-        num_pages = 1
+        # Return a mocked response matching the expected Yomitoku OCR response structure.
+        # Note: Yomitoku can return both markdown and layout box data.
+        try:
+            reader = PdfReader(pdf_path)
+            num_pages = len(reader.pages)
+        except Exception:
+            num_pages = 1
 
-    mock_pages = []
-    for i in range(num_pages):
-        page_num = i + 1
-        mock_pages.append({
-            "page": page_num,
-            "markdown": f"# Yomitoku OCR Page {page_num}\nThis is dummy text representing the extracted markdown from page {page_num}.\nExample target value: 100.0\n",
-            "data": {
-                "paragraphs": [
-                    {
-                        "contents": f"Example target value: 100.0 on page {page_num}",
-                        "box": [50.0, 100.0, 200.0, 120.0]  # [x0, y0, x1, y1]
-                    }
-                ],
-                "text_blocks": [],
-                "tables": []
-            }
-        })
-    
-    return {"pages": mock_pages}
+        mock_pages = []
+        for i in range(num_pages):
+            page_num = i + 1
+            mock_pages.append({
+                "page": page_num,
+                "markdown": f"# Yomitoku OCR Page {page_num}\nThis is dummy text representing the extracted markdown from page {page_num}.\nExample target value: 100.0\n",
+                "data": {
+                    "paragraphs": [
+                        {
+                            "contents": f"Example target value: 100.0 on page {page_num}",
+                            "box": [50.0, 100.0, 200.0, 120.0]  # [x0, y0, x1, y1]
+                        }
+                    ],
+                    "text_blocks": [],
+                    "tables": []
+                }
+            })
+        
+        return {"pages": mock_pages}
 
 
 class YomitokuProvider(DocumentProvider):
