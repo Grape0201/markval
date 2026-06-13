@@ -113,7 +113,7 @@ document.addEventListener('alpine:init', () => {
             this.selectedItem = null;
             this.checkItems = [];
             this.matchResults = {};
-            this.matchingSourceDocIds = [];
+            this.matchingSourceDocIds = this.sourceDocs.map(d => d.id);
             
             this.loading.sessions = true;
             try {
@@ -196,7 +196,7 @@ document.addEventListener('alpine:init', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         session_id: this.activeSession.id,
-                        document_ids: this.matchingSourceDocIds.length > 0 ? this.matchingSourceDocIds : null
+                        document_ids: this.matchingSourceDocIds.length === this.sourceDocs.length ? null : this.matchingSourceDocIds
                     })
                 });
                 if (!res.ok) {
@@ -443,7 +443,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 const res = await fetch('/api/v1/source-documents');
                 if (!res.ok) throw new Error('出典文書リストの取得に失敗しました');
+                const wasAllSelected = this.matchingSourceDocIds.length === 0 || this.matchingSourceDocIds.length === this.sourceDocs.length;
                 this.sourceDocs = await res.json();
+                if (wasAllSelected) {
+                    this.matchingSourceDocIds = this.sourceDocs.map(d => d.id);
+                }
             } catch (err) {
                 this.showNotification(err.message, 'error');
             } finally {
