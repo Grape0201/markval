@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, JSO
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
+
 class SourceDocument(Base):
     __tablename__ = "source_documents"
 
@@ -16,7 +17,9 @@ class SourceDocument(Base):
     categories = Column(JSON, nullable=True)
 
     # Relationship to source items
-    items = relationship("SourceItem", back_populates="document", cascade="all, delete-orphan")
+    items = relationship(
+        "SourceItem", back_populates="document", cascade="all, delete-orphan"
+    )
 
 
 class SourceItem(Base):
@@ -33,7 +36,9 @@ class SourceItem(Base):
     category = Column(String(100), nullable=True)
 
     document = relationship("SourceDocument", back_populates="items")
-    match_results = relationship("MatchResult", back_populates="source_item", cascade="all, delete-orphan")
+    match_results = relationship(
+        "MatchResult", back_populates="source_item", cascade="all, delete-orphan"
+    )
 
 
 class CheckSession(Base):
@@ -41,12 +46,16 @@ class CheckSession(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     file_a_path = Column(String(512), nullable=False)
-    prompt_template_id = Column(String(36), ForeignKey("prompt_templates.id"), nullable=True)
+    prompt_template_id = Column(
+        String(36), ForeignKey("prompt_templates.id"), nullable=True
+    )
     status = Column(String(50), default="pending")  # pending, reviewed, exported
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    check_items = relationship("CheckItem", back_populates="session", cascade="all, delete-orphan")
+    check_items = relationship(
+        "CheckItem", back_populates="session", cascade="all, delete-orphan"
+    )
     prompt_template = relationship("PromptTemplate", back_populates="sessions")
 
 
@@ -65,7 +74,9 @@ class CheckItem(Base):
     category = Column(String(100), nullable=True)
 
     session = relationship("CheckSession", back_populates="check_items")
-    match_results = relationship("MatchResult", back_populates="check_item", cascade="all, delete-orphan")
+    match_results = relationship(
+        "MatchResult", back_populates="check_item", cascade="all, delete-orphan"
+    )
 
 
 class MatchResult(Base):

@@ -11,6 +11,7 @@ from pypdf import PdfReader, PdfWriter
 
 from app.core.semaphores import get_yomitoku_semaphore
 
+
 def _clean_and_parse_value(text: str) -> float | None:
     candidate = text.strip()
 
@@ -30,7 +31,9 @@ class DocumentProvider(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def annotate(
+        self, pdf_path: Path, items: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Locate items on the PDF page and add bounding box (bbox) information."""
         raise NotImplementedError
 
@@ -46,61 +49,64 @@ class LocalProvider(DocumentProvider):
 
         for idx in range(len(reader.pages)):
             page_num = idx + 1
-            
+
             # Write single page to a BytesIO stream
             writer = PdfWriter()
             writer.add_page(reader.pages[idx])
-            
+
             pdf_stream = io.BytesIO()
             writer.write(pdf_stream)
             pdf_stream.seek(0)
-            
+
             # Convert page to markdown
-            result = markitdown_converter.convert_stream(pdf_stream, mime_type="application/pdf")
+            result = markitdown_converter.convert_stream(
+                pdf_stream, mime_type="application/pdf"
+            )
             markdown_text = result.text_content
-            
-            pages_data.append({
-                "page": page_num,
-                "markdown": markdown_text
-            })
+
+            pages_data.append({"page": page_num, "markdown": markdown_text})
 
         return pages_data
 
-    def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def annotate(
+        self, pdf_path: Path, items: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-        
+
         updated_items = []
-    
+
         with pdfplumber.open(pdf_path) as pdf:
             for item in items:
                 label = item["label"]
                 target_value = item["value"]
                 page_num = item["page"]
                 context = item.get("context") or item.get("context_text") or ""
-            
+
                 if page_num < 1 or page_num > len(pdf.pages):
                     item["bbox"] = None
                     updated_items.append(item)
                     continue
-                
+
                 page = pdf.pages[page_num - 1]
                 words = page.extract_words()
-            
+
                 # Group words to lines for context comparison
                 words_sorted = sorted(words, key=lambda w: (w["top"], w["x0"]))
                 lines = []
                 if words_sorted:
                     current_group = [words_sorted[0]]
                     for w in words_sorted[1:]:
-                        avg_top = sum(item["top"] for item in current_group) / len(current_group)
+                        avg_top = sum(item["top"] for item in current_group) / len(
+                            current_group
+                        )
                         if abs(w["top"] - avg_top) < 3.0:
                             current_group.append(w)
                         else:
                             lines.append(current_group)
                             current_group = [w]
                     lines.append(current_group)
-            
+
                 line_texts = []
                 line_mappings = []
                 for line in lines:
@@ -108,7 +114,7 @@ class LocalProvider(DocumentProvider):
                     text = " ".join(w["text"] for w in line_words_sorted)
                     line_texts.append(text)
                     line_mappings.append(line_words_sorted)
-                
+
                 # Find candidate words representing target_value
                 candidates = []
                 for line_idx, line_words in enumerate(line_mappings):
@@ -116,17 +122,17 @@ class LocalProvider(DocumentProvider):
                         word_val = _clean_and_parse_value(word["text"])
                         if word_val is not None and abs(word_val - target_value) < 1e-5:
                             candidates.append((word, line_texts[line_idx]))
-            
+
                 if not candidates:
                     item["bbox"] = None
                     updated_items.append(item)
                     continue
-            
+
                 # Disambiguate candidates using token intersection
                 best_word = None
                 best_score = -1.0
                 keywords = set(re.findall(r"\w+", label) + re.findall(r"\w+", context))
-            
+
                 for word, line_text in candidates:
                     line_tokens = set(re.findall(r"\w+", line_text))
                     matches = len(keywords.intersection(line_tokens))
@@ -134,20 +140,20 @@ class LocalProvider(DocumentProvider):
                     if score > best_score:
                         best_score = score
                         best_word = word
-            
+
                 if best_word:
                     bbox = {
                         "x0": round(float(best_word["x0"]), 1),
                         "y0": round(float(best_word["top"]), 1),
                         "x1": round(float(best_word["x1"]), 1),
-                        "y1": round(float(best_word["bottom"]), 1)
+                        "y1": round(float(best_word["bottom"]), 1),
                     }
                     item["bbox"] = bbox
                 else:
                     item["bbox"] = None
-                
+
                 updated_items.append(item)
-            
+
         return updated_items
 
 
@@ -178,21 +184,23 @@ async def _call_yomitoku_api(pdf_path: Path) -> dict[str, Any]:
         mock_pages = []
         for i in range(num_pages):
             page_num = i + 1
-            mock_pages.append({
-                "page": page_num,
-                "markdown": f"# Yomitoku OCR Page {page_num}\nThis is dummy text representing the extracted markdown from page {page_num}.\nExample target value: 100.0\n",
-                "data": {
-                    "paragraphs": [
-                        {
-                            "contents": f"Example target value: 100.0 on page {page_num}",
-                            "box": [50.0, 100.0, 200.0, 120.0]  # [x0, y0, x1, y1]
-                        }
-                    ],
-                    "text_blocks": [],
-                    "tables": []
+            mock_pages.append(
+                {
+                    "page": page_num,
+                    "markdown": f"# Yomitoku OCR Page {page_num}\nThis is dummy text representing the extracted markdown from page {page_num}.\nExample target value: 100.0\n",
+                    "data": {
+                        "paragraphs": [
+                            {
+                                "contents": f"Example target value: 100.0 on page {page_num}",
+                                "box": [50.0, 100.0, 200.0, 120.0],  # [x0, y0, x1, y1]
+                            }
+                        ],
+                        "text_blocks": [],
+                        "tables": [],
+                    },
                 }
-            })
-        
+            )
+
         return {"pages": mock_pages}
 
 
@@ -204,19 +212,23 @@ class YomitokuProvider(DocumentProvider):
         # Call the dummy OCR API
         api_response = await _call_yomitoku_api(pdf_path)
         self._cached_pages = api_response.get("pages", [])
-        
+
         # Format return value as list of {"page": int, "markdown": str}
         pages_data = []
         for page in self._cached_pages:
-            pages_data.append({
-                "page": page["page"],
-                "markdown": page.get("markdown", "")
-            })
+            pages_data.append(
+                {"page": page["page"], "markdown": page.get("markdown", "")}
+            )
         return pages_data
 
-    def annotate(self, pdf_path: Path, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def annotate(
+        self, pdf_path: Path, items: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         # Map page layouts from cached Yomitoku response
-        entries_by_page = {page.get("page"): self._build_page_entries(page) for page in self._cached_pages}
+        entries_by_page = {
+            page.get("page"): self._build_page_entries(page)
+            for page in self._cached_pages
+        }
 
         updated_items: list[dict[str, Any]] = []
         for item in items:
@@ -259,12 +271,20 @@ class YomitokuProvider(DocumentProvider):
         return entries
 
     @staticmethod
-    def _add_entry(entries: list[dict[str, Any]], text: str | None, box: list[float] | None) -> None:
+    def _add_entry(
+        entries: list[dict[str, Any]], text: str | None, box: list[float] | None
+    ) -> None:
         if not text or not box:
             return
         entries.append({"text": text, "box": box})
 
-    def _select_entry(self, entries: list[dict[str, Any]], label: str, context: str, target_value: float) -> dict[str, Any] | None:
+    def _select_entry(
+        self,
+        entries: list[dict[str, Any]],
+        label: str,
+        context: str,
+        target_value: float,
+    ) -> dict[str, Any] | None:
         candidates: list[dict[str, Any]] = []
         for entry in entries:
             text = entry["text"]

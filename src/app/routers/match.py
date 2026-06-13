@@ -11,6 +11,7 @@ from app.routers.file_a import MatchResultResponse, SourceItemInfo
 
 router = APIRouter(tags=["match"])
 
+
 class MatchRequest(BaseModel):
     session_id: str
     document_ids: list[str] | None = None
@@ -23,29 +24,35 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
     if not session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session with id {session_id} not found"
+            detail=f"Session with id {session_id} not found",
         )
-        
+
     check_items = db.query(CheckItem).filter(CheckItem.session_id == session_id).all()
     if not check_items:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"No checklist items found for session {session_id}. Please upload File A first."
+            detail=f"No checklist items found for session {session_id}. Please upload File A first.",
         )
-        
+
     check_item_ids = [item.id for item in check_items]
-    
+
     # 1. Clear existing results for these check items
-    existing_results = db.query(MatchResult).filter(MatchResult.check_item_id.in_(check_item_ids)).all()
+    existing_results = (
+        db.query(MatchResult)
+        .filter(MatchResult.check_item_id.in_(check_item_ids))
+        .all()
+    )
     for r in existing_results:
         db.delete(r)
     db.commit()
-    
+
     # 2. Execute match for each item
     new_results = []
     for check_item in check_items:
         try:
-            result = await match_check_item(db, check_item, document_ids=payload.document_ids)
+            result = await match_check_item(
+                db, check_item, document_ids=payload.document_ids
+            )
             setattr(result, "id", str(uuid.uuid4()))
             db.add(result)
             new_results.append(result)
@@ -57,15 +64,15 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
                 source_item_id=None,
                 confidence=0.0,
                 status="pending",
-                ai_reasoning=f"Matching failed due to exception: {e}"
+                ai_reasoning=f"Matching failed due to exception: {e}",
             )
             db.add(failed_result)
             new_results.append(failed_result)
-            
+
     # Update session status
     setattr(session, "status", "reviewed")
     db.commit()
-    
+
     # 3. Format and return results
     response_list = []
     for result in new_results:
@@ -73,10 +80,14 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
         item = db.query(CheckItem).filter(CheckItem.id == result.check_item_id).first()
         if not item:
             continue
-            
+
         source_item = None
         if result.source_item_id:
-            s_item = db.query(SourceItem).filter(SourceItem.id == result.source_item_id).first()
+            s_item = (
+                db.query(SourceItem)
+                .filter(SourceItem.id == result.source_item_id)
+                .first()
+            )
             if s_item:
                 source_item = SourceItemInfo(
                     label=str(s_item.label),
@@ -85,21 +96,23 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
                     page=cast(int, s_item.page),
                     context_text=str(s_item.context_text),
                     category=str(s_item.category) if s_item.category else None,
-                    document_id=str(s_item.document_id)
+                    document_id=str(s_item.document_id),
                 )
-                
-        response_list.append(MatchResultResponse(
-            id=str(result.id),
-            check_item_id=str(result.check_item_id),
-            check_item_label=str(item.label),
-            check_item_value=cast(float, item.value),
-            check_item_unit=str(item.unit),
-            check_item_page=cast(int, item.page),
-            matched=bool(result.status == "approved"),
-            confidence=cast(float, result.confidence),
-            status=str(result.status),
-            ai_reasoning=str(result.ai_reasoning),
-            source_item=source_item
-        ))
-        
+
+        response_list.append(
+            MatchResultResponse(
+                id=str(result.id),
+                check_item_id=str(result.check_item_id),
+                check_item_label=str(item.label),
+                check_item_value=cast(float, item.value),
+                check_item_unit=str(item.unit),
+                check_item_page=cast(int, item.page),
+                matched=bool(result.status == "approved"),
+                confidence=cast(float, result.confidence),
+                status=str(result.status),
+                ai_reasoning=str(result.ai_reasoning),
+                source_item=source_item,
+            )
+        )
+
     return response_list

@@ -7,7 +7,13 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-from app.db.models import CheckSession, CheckItem, MatchResult, SourceItem, SourceDocument
+from app.db.models import (
+    CheckSession,
+    CheckItem,
+    MatchResult,
+    SourceItem,
+    SourceDocument,
+)
 
 
 def format_value_unit(val: float, unit: str) -> str:
@@ -34,7 +40,11 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
 
     check_items = db.query(CheckItem).filter(CheckItem.session_id == session_id).all()
     check_item_ids = [item.id for item in check_items]
-    match_results = db.query(MatchResult).filter(MatchResult.check_item_id.in_(check_item_ids)).all()
+    match_results = (
+        db.query(MatchResult)
+        .filter(MatchResult.check_item_id.in_(check_item_ids))
+        .all()
+    )
 
     # Dynamic annotation ID mapping (matches PDF annotator logic)
     matched_ids: dict[str, str] = {}
@@ -69,25 +79,39 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
             ai_reason = r.ai_reasoning or ""
 
             if r.source_item_id:
-                s_item = db.query(SourceItem).filter(SourceItem.id == r.source_item_id).first()
+                s_item = (
+                    db.query(SourceItem)
+                    .filter(SourceItem.id == r.source_item_id)
+                    .first()
+                )
                 if s_item:
-                    s_doc = db.query(SourceDocument).filter(SourceDocument.id == s_item.document_id).first()
+                    s_doc = (
+                        db.query(SourceDocument)
+                        .filter(SourceDocument.id == s_item.document_id)
+                        .first()
+                    )
                     if s_doc:
                         source_filename = cast(str, s_doc.filename)
-                    source_val_unit = format_value_unit(cast(float, s_item.value), cast(str, s_item.unit))
+                    source_val_unit = format_value_unit(
+                        cast(float, s_item.value), cast(str, s_item.unit)
+                    )
                     source_page_str = str(s_item.page)
 
-        results_data.append({
-            "annotation_id": annotation_id,
-            "status": status_str,
-            "item_label": item.label,
-            "calc_val_unit": format_value_unit(cast(float, item.value), cast(str, item.unit)),
-            "calc_page": str(item.page),
-            "source_filename": source_filename,
-            "source_val_unit": source_val_unit,
-            "source_page": source_page_str,
-            "ai_reasoning": ai_reason
-        })
+        results_data.append(
+            {
+                "annotation_id": annotation_id,
+                "status": status_str,
+                "item_label": item.label,
+                "calc_val_unit": format_value_unit(
+                    cast(float, item.value), cast(str, item.unit)
+                ),
+                "calc_page": str(item.page),
+                "source_filename": source_filename,
+                "source_val_unit": source_val_unit,
+                "source_page": source_page_str,
+                "ai_reasoning": ai_reason,
+            }
+        )
 
     # Create OpenPyXL workbook
     wb = openpyxl.Workbook()
@@ -107,10 +131,18 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
     font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
     font_data = Font(name="Calibri", size=10)
 
-    fill_header = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
-    fill_approved = PatternFill(start_color="E2F0D9", end_color="E2F0D9", fill_type="solid")
-    fill_mismatch = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
-    fill_pending = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+    fill_header = PatternFill(
+        start_color="1F4E79", end_color="1F4E79", fill_type="solid"
+    )
+    fill_approved = PatternFill(
+        start_color="E2F0D9", end_color="E2F0D9", fill_type="solid"
+    )
+    fill_mismatch = PatternFill(
+        start_color="FCE4D6", end_color="FCE4D6", fill_type="solid"
+    )
+    fill_pending = PatternFill(
+        start_color="FFF2CC", end_color="FFF2CC", fill_type="solid"
+    )
 
     align_center = Alignment(horizontal="center", vertical="center")
     align_right = Alignment(horizontal="right", vertical="center")
@@ -121,7 +153,7 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
         left=Side(style="thin", color="D9D9D9"),
         right=Side(style="thin", color="D9D9D9"),
         top=Side(style="thin", color="D9D9D9"),
-        bottom=Side(style="thin", color="D9D9D9")
+        bottom=Side(style="thin", color="D9D9D9"),
     )
 
     # Write brand and metadata headers
@@ -140,9 +172,17 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
 
     # Write main data headers (optimized for A4 landscape print)
     headers = [
-        "ID", "AI判定", "項目名", "計算値", "頁(A)",
-        "出典ファイル", "出典値", "頁(B)", "AI理由",
-        "目視確認", "確認者"
+        "ID",
+        "AI判定",
+        "項目名",
+        "計算値",
+        "頁(A)",
+        "出典ファイル",
+        "出典値",
+        "頁(B)",
+        "AI理由",
+        "目視確認",
+        "確認者",
     ]
     for col_idx, h in enumerate(headers, start=1):
         cell = ws.cell(row=6, column=col_idx, value=h)
@@ -167,7 +207,7 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
             item["source_page"],
             item["ai_reasoning"],
             "",  # Human verification (empty)
-            ""   # Checker name (empty)
+            "",  # Checker name (empty)
         ]
 
         status = item["status"]
@@ -213,7 +253,7 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
                 max_len = max(max_len, length)
 
         # Precise constraints for print limits
-        if col_letter == "I":    # AI理由
+        if col_letter == "I":  # AI理由
             ws.column_dimensions[col_letter].width = 45
         elif col_letter == "F":  # 出典ファイル
             ws.column_dimensions[col_letter].width = 25

@@ -9,16 +9,20 @@ from app.db.models import PromptTemplate
 
 router = APIRouter(prefix="/api/v1/prompt-templates", tags=["prompt-templates"])
 
+
 class PromptTemplateBase(BaseModel):
     name: str
     content: str
     industry: str | None = None
 
+
 class PromptTemplateCreate(PromptTemplateBase):
     pass
 
+
 class PromptTemplateUpdate(PromptTemplateBase):
     pass
+
 
 class PromptTemplateResponse(PromptTemplateBase):
     id: str
@@ -40,19 +44,21 @@ def get_template(template_id: str, db: Session = Depends(get_db)):
     if not template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt template with id {template_id} not found"
+            detail=f"Prompt template with id {template_id} not found",
         )
     return template
 
 
-@router.post("", response_model=PromptTemplateResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=PromptTemplateResponse, status_code=status.HTTP_201_CREATED
+)
 def create_template(template_in: PromptTemplateCreate, db: Session = Depends(get_db)):
     template = PromptTemplate(
         id=str(uuid.uuid4()),
         name=template_in.name,
         content=template_in.content,
         industry=template_in.industry,
-        created_at=datetime.now(timezone.utc)
+        created_at=datetime.now(timezone.utc),
     )
     db.add(template)
     db.commit()
@@ -61,18 +67,20 @@ def create_template(template_in: PromptTemplateCreate, db: Session = Depends(get
 
 
 @router.put("/{template_id}", response_model=PromptTemplateResponse)
-def update_template(template_id: str, template_in: PromptTemplateUpdate, db: Session = Depends(get_db)):
+def update_template(
+    template_id: str, template_in: PromptTemplateUpdate, db: Session = Depends(get_db)
+):
     template = db.query(PromptTemplate).filter(PromptTemplate.id == template_id).first()
     if not template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt template with id {template_id} not found"
+            detail=f"Prompt template with id {template_id} not found",
         )
-    
+
     setattr(template, "name", template_in.name)
     setattr(template, "content", template_in.content)
     setattr(template, "industry", template_in.industry)
-    
+
     db.commit()
     db.refresh(template)
     return template
@@ -84,7 +92,7 @@ def delete_template(template_id: str, db: Session = Depends(get_db)):
     if not template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt template with id {template_id} not found"
+            detail=f"Prompt template with id {template_id} not found",
         )
     db.delete(template)
     db.commit()

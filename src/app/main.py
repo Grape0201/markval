@@ -21,6 +21,7 @@ from app.routers import prompt_templates, file_b, file_a, match
 # Load environment variables
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     initialize_database()
@@ -42,7 +43,7 @@ async def lifespan(app: FastAPI):
                     "- 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）"
                 ),
                 industry="建築構造",
-                created_at=datetime.now(timezone.utc)
+                created_at=datetime.now(timezone.utc),
             )
             db.add(default_template)
             db.commit()
@@ -52,6 +53,7 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     yield
+
 
 app = FastAPI(title="PDF Verification API", version="1.0.0", lifespan=lifespan)
 

@@ -14,26 +14,52 @@ from app.services.document_providers import (
     YomitokuProvider,
 )
 
+
 # Pydantic schemas for File A (Checklist) structured extraction
 class PageCheckItem(BaseModel):
-    label: str = Field(description="項目名（日本語。部位・荷重種別・パラメータ名等を組み合わせる。例: '屋根 固定荷重', '事務室 積載荷重 (床用)', '標準せん断力係数 Co', 'SN400B 降伏点' など）")
-    symbol: str | None = Field(None, description="記号（あれば。例: 'Co', 'Z', 'Rt', 'Ci', 'Vo', 'Gf', 'qp', 'Cf', 'ft' など）")
-    value: float = Field(description="数値（実数型。例: 1200, 2.2, 0.20, 34, 0.256, 156）")
-    unit: str = Field(description="単位（例: 'N/m²', 'N/mm²', 'm/s'。無単位の場合は '─' または None）")
-    context: str = Field(description="抽出箇所の前後の文脈テキスト（表の周囲や該当行の文字列を含める）")
-    source_hint: str | None = Field(None, description="計算書に記載されている出典情報・参照先（例: '表4.1 ／ p.45', '令85条 表1', '令88条第1項' など。ない場合はNone）")
-    category: str = Field(description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。")
+    label: str = Field(
+        description="項目名（日本語。部位・荷重種別・パラメータ名等を組み合わせる。例: '屋根 固定荷重', '事務室 積載荷重 (床用)', '標準せん断力係数 Co', 'SN400B 降伏点' など）"
+    )
+    symbol: str | None = Field(
+        None,
+        description="記号（あれば。例: 'Co', 'Z', 'Rt', 'Ci', 'Vo', 'Gf', 'qp', 'Cf', 'ft' など）",
+    )
+    value: float = Field(
+        description="数値（実数型。例: 1200, 2.2, 0.20, 34, 0.256, 156）"
+    )
+    unit: str = Field(
+        description="単位（例: 'N/m²', 'N/mm²', 'm/s'。無単位の場合は '─' または None）"
+    )
+    context: str = Field(
+        description="抽出箇所の前後の文脈テキスト（表の周囲や該当行の文字列を含める）"
+    )
+    source_hint: str | None = Field(
+        None,
+        description="計算書に記載されている出典情報・参照先（例: '表4.1 ／ p.45', '令85条 表1', '令88条第1項' など。ない場合はNone）",
+    )
+    category: str = Field(
+        description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。"
+    )
+
 
 class PageChecklist(BaseModel):
     items: list[PageCheckItem]
 
+
 # Pydantic schemas for File B (Source Reference) structured extraction
 class PageSourceItem(BaseModel):
-    label: str = Field(description="項目名（日本語。室用途や部材種別・パラメータ名、荷重区分を組み合わせる。例: '折板葺き（断熱材あり） 固定荷重', '事務室 積載荷重 (床用)', '地表面粗度区分Ⅲ Gf(H=10m)', '閉鎖型（矩形） 総合（壁面） Cf' など）")
+    label: str = Field(
+        description="項目名（日本語。室用途や部材種別・パラメータ名、荷重区分を組み合わせる。例: '折板葺き（断熱材あり） 固定荷重', '事務室 積載荷重 (床用)', '地表面粗度区分Ⅲ Gf(H=10m)', '閉鎖型（矩形） 総合（壁面） Cf' など）"
+    )
     value: float = Field(description="数値")
-    unit: str = Field(description="単位（例: 'N/m²', 'm/s', 'N/mm²'。無単位の場合は '─' または None）")
+    unit: str = Field(
+        description="単位（例: 'N/m²', 'm/s', 'N/mm²'。無単位の場合は '─' または None）"
+    )
     context_text: str = Field(description="前後の文脈テキストや適用条件")
-    category: str = Field(description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。")
+    category: str = Field(
+        description="分類カテゴリ。指定された候補の中から最もふさわしいものを1つ選んで設定してください。"
+    )
+
 
 class PageSourceList(BaseModel):
     items: list[PageSourceItem]
@@ -42,25 +68,27 @@ class PageSourceList(BaseModel):
 def get_llm():
     model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
     primary_llm = ChatGoogleGenerativeAI(model=model_name, temperature=0.0)
-    
+
     azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
     azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
     azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
-    
+
     if azure_api_key and azure_endpoint:
         from langchain_openai import AzureChatOpenAI
         from pydantic import SecretStr
+
         azure_llm = AzureChatOpenAI(
             azure_deployment=azure_deployment,
-            api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-15-preview"),
+            api_version=os.environ.get(
+                "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
+            ),
             azure_endpoint=azure_endpoint,
             api_key=SecretStr(azure_api_key),
-            temperature=0.0
+            temperature=0.0,
         )
         return primary_llm.with_fallbacks([azure_llm])
-        
-    return primary_llm
 
+    return primary_llm
 
 
 def _select_document_provider() -> DocumentProvider:
@@ -77,13 +105,19 @@ def _select_document_provider() -> DocumentProvider:
         return LocalProvider()
 
 
-DEFAULT_CATEGORIES = ["固定荷重", "積載荷重", "積雪荷重", "風荷重", "地震荷重", "材料強度", "その他"]
+DEFAULT_CATEGORIES = [
+    "固定荷重",
+    "積載荷重",
+    "積雪荷重",
+    "風荷重",
+    "地震荷重",
+    "材料強度",
+    "その他",
+]
 
 
 async def extract_source_items_from_pdf(
-    pdf_path: Path,
-    categories: list[str] | None = None,
-    llm: Any = None
+    pdf_path: Path, categories: list[str] | None = None, llm: Any = None
 ) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
@@ -93,20 +127,28 @@ async def extract_source_items_from_pdf(
     cats = categories or DEFAULT_CATEGORIES
     cats_str = ", ".join(cats)
 
-    prompt_b = ChatPromptTemplate.from_messages([
-        ("system", (
-            "あなたは建築構造設計の基準書・荷重指針（ファイルB）から標準的な数値データを抽出する専門家です。\n"
-            "入力されたページテキスト（Markdown形式）から、各部位の固定荷重標準値、積載荷重、風荷重などのデータを抽出してください。\n"
-            "積載荷重は「床用」「大梁・柱用」「地震用」などの区分がある場合は、それぞれの数値を別々の項目として抽出してください（例: '事務室 積載荷重 (床用)', '事務室 積載荷重 (大梁・柱用)'）。\n"
-            f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
-            f"【カテゴリリスト】: {cats_str}"
-        )),
-        ("user", (
-            "以下のテキストから、基準値やパラメータの数値を抽出してください。\n\n"
-            "【対象テキスト】\n"
-            "{text}"
-        ))
-    ])
+    prompt_b = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                (
+                    "あなたは建築構造設計の基準書・荷重指針（ファイルB）から標準的な数値データを抽出する専門家です。\n"
+                    "入力されたページテキスト（Markdown形式）から、各部位の固定荷重標準値、積載荷重、風荷重などのデータを抽出してください。\n"
+                    "積載荷重は「床用」「大梁・柱用」「地震用」などの区分がある場合は、それぞれの数値を別々の項目として抽出してください（例: '事務室 積載荷重 (床用)', '事務室 積載荷重 (大梁・柱用)'）。\n"
+                    f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
+                    f"【カテゴリリスト】: {cats_str}"
+                ),
+            ),
+            (
+                "user",
+                (
+                    "以下のテキストから、基準値やパラメータの数値を抽出してください。\n\n"
+                    "【対象テキスト】\n"
+                    "{text}"
+                ),
+            ),
+        ]
+    )
     chain_b = prompt_b | llm.with_structured_output(PageSourceList)
 
     semaphore = get_llm_semaphore()
@@ -114,20 +156,22 @@ async def extract_source_items_from_pdf(
     async def _extract_page(page_info: dict[str, Any]) -> list[dict[str, Any]]:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
-        
+
         async with semaphore:
             result = await chain_b.ainvoke({"text": markdown_text})
-            
+
         page_items = []
         for item in result.items:
-            page_items.append({
-                "page": page_num,
-                "label": item.label,
-                "value": item.value,
-                "unit": item.unit,
-                "context_text": item.context_text,
-                "category": item.category
-            })
+            page_items.append(
+                {
+                    "page": page_num,
+                    "label": item.label,
+                    "value": item.value,
+                    "unit": item.unit,
+                    "context_text": item.context_text,
+                    "category": item.category,
+                }
+            )
         return page_items
 
     tasks = [_extract_page(page_info) for page_info in pages_data]
@@ -139,15 +183,12 @@ async def extract_source_items_from_pdf(
 
     # Localize bounding boxes using provider alignment
     items_with_bboxes = provider.annotate(pdf_path, extracted_items)
-    
 
     return items_with_bboxes
 
 
 async def extract_check_items_from_pdf(
-    pdf_path: Path,
-    categories: list[str] | None = None,
-    llm: Any = None
+    pdf_path: Path, categories: list[str] | None = None, llm: Any = None
 ) -> list[dict[str, Any]]:
     provider = _select_document_provider()
     pages_data = await provider.extract_markdown_pages(pdf_path)
@@ -157,25 +198,33 @@ async def extract_check_items_from_pdf(
     cats = categories or DEFAULT_CATEGORIES
     cats_str = ", ".join(cats)
 
-    prompt_a = ChatPromptTemplate.from_messages([
-        ("system", (
-            "あなたは構造計算書（ファイルA）から設計に使用した荷重・定数の入力値を抽出する専門家です。\n"
-            "入力されたページテキスト（Markdown形式）から、設計定数や設計荷重等の入力パラメータを抽出してください。\n\n"
-            "【抽出対象】\n"
-            "- 各部位の固定荷重（部位ごとの N/m² 値）\n"
-            "- 積載荷重（室用途・加重種別（床用、大梁・柱用、地震用）ごとの N/m² 値）\n"
-            "- 地震関連パラメータ（Co, Z, Rt, Ci 等の数値）\n"
-            "- 風荷重パラメータ（Vo, Gf, qp, Cf 等の数値）\n"
-            "- 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）\n\n"
-            f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
-            f"【カテゴリリスト】: {cats_str}"
-        )),
-        ("user", (
-            "以下のテキストから、設計に使用した荷重・定数の入力値を抽出してください。\n\n"
-            "【対象テキスト】\n"
-            "{text}"
-        ))
-    ])
+    prompt_a = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                (
+                    "あなたは構造計算書（ファイルA）から設計に使用した荷重・定数の入力値を抽出する専門家です。\n"
+                    "入力されたページテキスト（Markdown形式）から、設計定数や設計荷重等の入力パラメータを抽出してください。\n\n"
+                    "【抽出対象】\n"
+                    "- 各部位の固定荷重（部位ごとの N/m² 値）\n"
+                    "- 積載荷重（室用途・加重種別（床用、大梁・柱用、地震用）ごとの N/m² 値）\n"
+                    "- 地震関連パラメータ（Co, Z, Rt, Ci 等の数値）\n"
+                    "- 風荷重パラメータ（Vo, Gf, qp, Cf 等の数値）\n"
+                    "- 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）\n\n"
+                    f"また、抽出した各項目について、次のカテゴリリストの中から最も適切なものを1つ選択し、`category` フィールドに設定してください。\n"
+                    f"【カテゴリリスト】: {cats_str}"
+                ),
+            ),
+            (
+                "user",
+                (
+                    "以下のテキストから、設計に使用した荷重・定数の入力値を抽出してください。\n\n"
+                    "【対象テキスト】\n"
+                    "{text}"
+                ),
+            ),
+        ]
+    )
     chain_a = prompt_a | llm.with_structured_output(PageChecklist)
 
     semaphore = get_llm_semaphore()
@@ -183,21 +232,23 @@ async def extract_check_items_from_pdf(
     async def _extract_page(page_info: dict[str, Any]) -> list[dict[str, Any]]:
         page_num = page_info["page"]
         markdown_text = page_info["markdown"]
-        
+
         async with semaphore:
             result = await chain_a.ainvoke({"text": markdown_text})
-            
+
         page_items = []
         for item in result.items:
-            page_items.append({
-                "page": page_num,
-                "label": item.label,
-                "value": item.value,
-                "unit": item.unit,
-                "context": item.context,
-                "source_hint": item.source_hint,
-                "category": item.category
-            })
+            page_items.append(
+                {
+                    "page": page_num,
+                    "label": item.label,
+                    "value": item.value,
+                    "unit": item.unit,
+                    "context": item.context,
+                    "source_hint": item.source_hint,
+                    "category": item.category,
+                }
+            )
         return page_items
 
     tasks = [_extract_page(page_info) for page_info in pages_data]
