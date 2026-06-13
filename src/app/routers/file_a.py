@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import cast
 import uuid
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from pydantic import BaseModel
@@ -11,6 +12,7 @@ from app.db.database import get_db
 from app.db.models import CheckSession, CheckItem, MatchResult, SourceItem
 from app.services.extractor import extract_check_items_from_pdf
 from app.services.annotator import annotate_pdf_file_a
+from app.services.excel_exporter import generate_excel_report
 
 router = APIRouter(tags=["sessions"])
 
@@ -47,6 +49,7 @@ class SourceItemInfo(BaseModel):
     page: int
     context_text: str
     category: str | None = None
+    document_id: str
 
 class MatchResultResponse(BaseModel):
     id: str
@@ -225,7 +228,8 @@ def get_session_results(session_id: str, db: Session = Depends(get_db)):
                     unit=str(s_item.unit),
                     page=cast(int, s_item.page),
                     context_text=str(s_item.context_text),
-                    category=str(s_item.category) if s_item.category else None
+                    category=str(s_item.category) if s_item.category else None,
+                    document_id=str(s_item.document_id)
                 )
                 
         response_list.append(MatchResultResponse(
@@ -280,7 +284,8 @@ def update_result_status(result_id: str, payload: ResultStatusUpdate, db: Sessio
                 unit=str(s_item.unit),
                 page=cast(int, s_item.page),
                 context_text=str(s_item.context_text),
-                category=str(s_item.category) if s_item.category else None
+                category=str(s_item.category) if s_item.category else None,
+                document_id=str(s_item.document_id)
             )
             
     return MatchResultResponse(
@@ -383,3 +388,39 @@ def export_annotated_pdf(session_id: str, db: Session = Depends(get_db)):
         media_type="application/pdf",
         filename="annotated_file_a.pdf"
     )
+
+
+@router.post("/api/v1/sessions/{session_id}/export-excel")
+def export_excel(session_id: str, db: Session = Depends(get_db)):
+    session = db.query(CheckSession).filter(CheckSession.id == session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session with id {session_id} not found"
+        )
+        
+    try:
+        excel_stream = generate_excel_report(db, session_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate Excel report: {e}"
+        )
+        
+    original_path = Path(session.file_a_path)
+    base_name = original_path.stem
+    output_filename = f"verification_report_{base_name}.xlsx"
+    encoded_filename = urllib.parse.quote(output_filename)
+    
+    # Also update session status to exported as well
+    setattr(session, "status", "exported")
+    db.commit()
+    
+    return StreamingResponse(
+        excel_stream,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}"
+        }
+    )
+

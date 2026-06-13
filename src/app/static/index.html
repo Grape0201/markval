@@ -209,15 +209,71 @@
                                 </template>
                             </button>
 
-                            <!-- Export button -->
-                            <button class="btn btn-secondary" style="border-color: var(--color-approved); color: var(--color-approved); background: var(--color-approved-bg);" @click="exportAnnotatedPdf" :disabled="loading.export">
+                            <!-- Excel Report button -->
+                            <button class="btn btn-secondary" style="border-color: #107c41; color: #107c41; background: rgba(16, 124, 65, 0.05); display: flex; align-items: center; gap: 0.5rem;" @click="exportExcelReport" :disabled="loading.export || checkItems.length === 0">
                                 <template x-if="!loading.export">
-                                    <span><i class="fa-solid fa-file-pdf"></i> 注釈PDFダウンロード</span>
+                                    <span style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <i class="fa-solid fa-file-excel"></i> Excelレポート
+                                    </span>
                                 </template>
                                 <template x-if="loading.export">
-                                    <span style="display: flex; align-items: center; gap: 0.5rem;"><div class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: var(--color-approved);"></div> エクスポート中...</span>
+                                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: #107c41;"></div> エクスポート中...
+                                    </span>
                                 </template>
                             </button>
+
+                            <!-- Export button with dropdown -->
+                            <div style="position: relative;" x-data="{ open: false }" @click.outside="open = false">
+                                <button class="btn btn-secondary" style="border-color: var(--color-approved); color: var(--color-approved); background: var(--color-approved-bg); display: flex; align-items: center; gap: 0.5rem;" @click="open = !open" :disabled="loading.export">
+                                    <template x-if="!loading.export">
+                                        <span style="display: flex; align-items: center; gap: 0.4rem;">
+                                            <i class="fa-solid fa-file-pdf"></i> 注釈PDFダウンロード
+                                            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+                                        </span>
+                                    </template>
+                                    <template x-if="loading.export">
+                                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: var(--color-approved);"></div> エクスポート中...
+                                        </span>
+                                    </template>
+                                </button>
+                                <div x-show="open" class="dropdown-menu-custom" style="display: none; width: 280px; right: 0; left: auto;">
+                                    <div class="dropdown-header-custom">一括ダウンロード</div>
+                                    
+                                    <!-- ZIP bulk export -->
+                                    <button class="dropdown-item-custom" @click="exportAllSourceAnnotatedPdfs(); open = false;" :disabled="matchedSourceDocs.length === 0" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit;">
+                                        <i class="fa-solid fa-file-zipper" style="color: var(--accent-teal);"></i>
+                                        <span style="flex: 1; font-weight: 500;">すべてのPDF (ZIP一括)</span>
+                                    </button>
+                                    
+                                    <div style="border-bottom: 1px solid var(--border-glass); margin: 0.35rem 0;"></div>
+                                    <div class="dropdown-header-custom">個別ダウンロード</div>
+                                    
+                                    <!-- File A annotation download -->
+                                    <button class="dropdown-item-custom" @click="exportAnnotatedPdf(); open = false;" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit; margin-bottom: 0.25rem;">
+                                        <i class="fa-solid fa-file-pdf" style="color: var(--color-approved);"></i>
+                                        <span style="flex: 1;">計算書 (ファイルA)</span>
+                                    </button>
+                                    
+                                    <div style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.1rem; border-top: 1px dashed var(--border-glass); padding-top: 0.25rem;">
+                                        <template x-for="doc in matchedSourceDocs" :key="doc.id">
+                                            <button class="dropdown-item-custom" @click="exportSourceAnnotatedPdf(doc.id, doc.title || doc.filename); open = false;" style="background: none; border: none; width: 100%; text-align: left; font-family: inherit; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0; flex: 1;">
+                                                    <i class="fa-solid fa-file-pdf" style="color: var(--color-pending); opacity: 0.85;"></i>
+                                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="doc.title || doc.filename"></span>
+                                                </div>
+                                                <span class="badge" style="background: rgba(20, 184, 166, 0.12); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.2); font-size: 0.65rem; padding: 0.05rem 0.25rem; border-radius: 4px;" x-text="doc.match_count + '件'"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <template x-if="matchedSourceDocs.length === 0">
+                                        <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+                                            承認済みの出典はありません
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

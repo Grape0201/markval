@@ -84,7 +84,8 @@ async def run_matching(payload: MatchRequest, db: Session = Depends(get_db)):
                     unit=str(s_item.unit),
                     page=cast(int, s_item.page),
                     context_text=str(s_item.context_text),
-                    category=str(s_item.category) if s_item.category else None
+                    category=str(s_item.category) if s_item.category else None,
+                    document_id=str(s_item.document_id)
                 )
                 
         response_list.append(MatchResultResponse(

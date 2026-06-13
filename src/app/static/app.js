@@ -15,6 +15,7 @@ document.addEventListener('alpine:init', () => {
         selectedDoc: null,
         docItems: [], // items for selected doc (fetched on demand)
         matchingSourceDocIds: [],
+        matchedSourceDocs: [],
         
         // Prompts State
         promptTemplates: [],
@@ -129,6 +130,7 @@ document.addEventListener('alpine:init', () => {
                     resultsList.forEach(r => {
                         this.matchResults[r.check_item_id] = r;
                     });
+                    this.updateMatchedSourceDocs();
                 }
             } catch (err) {
                 this.showNotification(err.message, 'error');
@@ -206,6 +208,7 @@ document.addEventListener('alpine:init', () => {
                 resultsList.forEach(r => {
                     this.matchResults[r.check_item_id] = r;
                 });
+                this.updateMatchedSourceDocs();
                 
                 // Refresh session list and active session status
                 await this.fetchSessions();
@@ -239,6 +242,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 const updatedResult = await res.json();
                 this.matchResults[item.id] = updatedResult;
+                this.updateMatchedSourceDocs();
                 this.showNotification(`ステータスを「${status}」に更新しました。`);
             } catch (err) {
                 this.showNotification(err.message, 'error');
@@ -280,6 +284,130 @@ document.addEventListener('alpine:init', () => {
             } finally {
                 this.loading.export = false;
             }
+        },
+
+        async exportExcelReport() {
+            if (!this.activeSession) return;
+            
+            this.loading.export = true;
+            try {
+                const res = await fetch(`/api/v1/sessions/${this.activeSession.id}/export-excel`, {
+                    method: 'POST'
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Excelレポートのエクスポートに失敗しました。');
+                }
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                const originalName = this.getFilename(this.activeSession.file_a_path);
+                const baseName = originalName ? originalName.substring(0, originalName.lastIndexOf('.')) : 'report';
+                a.download = `verification_report_${baseName}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                
+                // Refresh sessions to update status
+                await this.fetchSessions();
+                const updated = this.sessions.find(s => s.id === this.activeSession.id);
+                if (updated) this.activeSession = updated;
+                
+                this.showNotification('Excelレポートをダウンロードしました。');
+            } catch (err) {
+                this.showNotification(err.message, 'error');
+            } finally {
+                this.loading.export = false;
+            }
+        },
+
+        async exportSourceAnnotatedPdf(docId, docFilename) {
+            if (!this.activeSession) return;
+            
+            this.loading.export = true;
+            try {
+                const res = await fetch(`/api/v1/source-documents/sessions/${this.activeSession.id}/source-documents/${docId}/export`, {
+                    method: 'POST'
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || '出典PDFのエクスポートに失敗しました。');
+                }
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `annotated_${docFilename || 'source.pdf'}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                this.showNotification(`出典「${docFilename}」の注釈付きPDFをダウンロードしました。`);
+            } catch (err) {
+                this.showNotification(err.message, 'error');
+            } finally {
+                this.loading.export = false;
+            }
+        },
+
+        async exportAllSourceAnnotatedPdfs() {
+            if (!this.activeSession) return;
+            
+            this.loading.export = true;
+            try {
+                const res = await fetch(`/api/v1/source-documents/sessions/${this.activeSession.id}/export-all`, {
+                    method: 'POST'
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || '出典PDFの一括エクスポートに失敗しました。');
+                }
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `annotated_sources_${this.activeSession.id.substring(0, 8)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                this.showNotification('すべての出典PDFをZIP一括ダウンロードしました。');
+            } catch (err) {
+                this.showNotification(err.message, 'error');
+            } finally {
+                this.loading.export = false;
+            }
+        },
+
+        updateMatchedSourceDocs() {
+            if (!this.activeSession) {
+                this.matchedSourceDocs = [];
+                return;
+            }
+            
+            const counts = {};
+            Object.values(this.matchResults).forEach(r => {
+                if (r.status === 'approved' && r.source_item && r.source_item.document_id) {
+                    const docId = r.source_item.document_id;
+                    counts[docId] = (counts[docId] || 0) + 1;
+                }
+            });
+            
+            const matched = [];
+            this.sourceDocs.forEach(doc => {
+                if (counts[doc.id]) {
+                    matched.push({
+                        id: doc.id,
+                        title: doc.title,
+                        filename: doc.filename,
+                        match_count: counts[doc.id]
+                    });
+                }
+            });
+            this.matchedSourceDocs = matched;
         },
         
         // ------------------

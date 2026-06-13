@@ -314,6 +314,27 @@ def test_export_annotated_pdf(client, db_session):
     assert response.status_code == 404
 
 
+def test_export_excel_report(client, db_session):
+    # Setup session, items, results
+    sess = CheckSession(id="session-excel", file_a_path="/path/to/file_a.pdf", status="reviewed")
+    c_item = CheckItem(id="check-excel", session_id="session-excel", label="Test Item", value=1500.0, unit="N/m²", page=1, context="context")
+    result = MatchResult(id="result-excel", check_item_id="check-excel", source_item_id=None, confidence=0.0, status="pending", ai_reasoning="Reason")
+    db_session.add_all([sess, c_item, result])
+    db_session.commit()
+
+    response = client.post("/api/v1/sessions/session-excel/export-excel")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    assert "attachment; filename*=UTF-8''verification_report_file_a.xlsx" in response.headers["content-disposition"]
+    
+    # Check if the body looks like a zip/xlsx file (starts with PK signature)
+    assert response.content.startswith(b"PK\x03\x04")
+
+    # Invalid session export
+    response = client.post("/api/v1/sessions/invalid-session/export-excel")
+    assert response.status_code == 404
+
+
 # ==========================================
 # Match Router Tests
 # ==========================================
@@ -360,3 +381,53 @@ async def test_run_matching_endpoint(client, db_session):
     # Test run matching for invalid session
     response = client.post("/api/v1/match", json={"session_id": "invalid-session"})
     assert response.status_code == 404
+
+
+def test_export_source_annotated_pdfs(client, db_session):
+    # Setup database records
+    sess = CheckSession(id="session-1", file_a_path="/path/to/file_a.pdf", status="reviewed")
+    c_item = CheckItem(id="check-1", session_id="session-1", label="Test Item A", value=1500.0, unit="N/m²", page=1, context="context")
+    doc = SourceDocument(id="doc-123", filename="ref.pdf", title="Ref Doc", version="v1.0", file_hash="dummyhash123")
+    s_item = SourceItem(id="source-1", document_id="doc-123", label="Ref Item B", value=1500.0, unit="N/m²", page=2, context_text="ref context", category="固定荷重")
+    result = MatchResult(id="result-1", check_item_id="check-1", source_item_id="source-1", confidence=0.95, status="approved", ai_reasoning="Matches perfectly.")
+    
+    db_session.add_all([sess, c_item, doc, s_item, result])
+    db_session.commit()
+
+    with patch("app.routers.file_b.Path.exists") as mock_exists:
+        mock_exists.return_value = True
+        
+        with patch("app.routers.file_b.annotate_pdf_file_b") as mock_annotate_b:
+            def side_effect_b(orig_pdf_path, source_items_data, annot_results, temp_output_path):
+                from pathlib import Path
+                Path(temp_output_path).touch()
+            mock_annotate_b.side_effect = side_effect_b
+            
+            with patch("app.routers.file_b.annotate_pdf_file_a") as mock_annotate_a:
+                def side_effect_a(pdf_path_a, items_a, results_a, temp_output_path_a):
+                    from pathlib import Path
+                    Path(temp_output_path_a).touch()
+                mock_annotate_a.side_effect = side_effect_a
+                
+                with patch("app.routers.file_b.FileResponse") as mock_fileresponse:
+                    mock_fileresponse.return_value = {"pdf": "dummy_b"}
+                    
+                    # 1. Test single export
+                    response = client.post("/api/v1/source-documents/sessions/session-1/source-documents/doc-123/export")
+                    assert response.status_code == 200
+                    assert response.json() == {"pdf": "dummy_b"}
+                    mock_annotate_b.assert_called_once()
+                    
+                mock_annotate_b.reset_mock()
+                mock_annotate_a.reset_mock()
+                
+                with patch("app.routers.file_b.FileResponse") as mock_fileresponse:
+                    mock_fileresponse.return_value = {"zip": "dummy_zip"}
+                    
+                    # 2. Test export all (ZIP)
+                    response = client.post("/api/v1/source-documents/sessions/session-1/export-all")
+                    assert response.status_code == 200
+                    assert response.json() == {"zip": "dummy_zip"}
+                    mock_annotate_b.assert_called_once()
+                    mock_annotate_a.assert_called_once()
+

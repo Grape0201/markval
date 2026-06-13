@@ -1,15 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import cast
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import hashlib
+import zipfile
 from pydantic import BaseModel
 
 from app.db.database import get_db
-from app.db.models import SourceDocument, SourceItem
+from app.db.models import SourceDocument, SourceItem, CheckSession, CheckItem, MatchResult
 from app.services.extractor import extract_source_items_from_pdf
+from app.services.annotator import annotate_pdf_file_b, annotate_pdf_file_a
 
 router = APIRouter(prefix="/api/v1/source-documents", tags=["source-documents"])
 
@@ -205,3 +208,273 @@ def get_source_document_items(document_id: str, db: Session = Depends(get_db)):
             category=str(item.category) if item.category else None
         ))
     return results
+
+
+@router.post("/sessions/{session_id}/export-all")
+def export_all_source_annotated_pdfs(session_id: str, db: Session = Depends(get_db)):
+    session = db.query(CheckSession).filter(CheckSession.id == session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session with id {session_id} not found"
+        )
+        
+    check_items = db.query(CheckItem).filter(CheckItem.session_id == session_id).all()
+    if not check_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No check items in this session"
+        )
+    
+    check_item_ids = [item.id for item in check_items]
+    match_results = db.query(MatchResult).filter(MatchResult.check_item_id.in_(check_item_ids)).all()
+    
+    # Generate mapping IDs to match File A's output
+    matched_ids = {}
+    matched_idx = 1
+    for r in match_results:
+        if r.status == "approved":
+            matched_ids[r.check_item_id] = f"c{matched_idx:02d}"
+            matched_idx += 1
+            
+    # Find all SourceDocuments that have approved matches in this session
+    source_doc_ids = set()
+    for r in match_results:
+        if r.status == "approved" and r.source_item_id:
+            s_item = db.query(SourceItem).filter(SourceItem.id == r.source_item_id).first()
+            if s_item:
+                source_doc_ids.add(s_item.document_id)
+                
+    if not source_doc_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="このセッションで承認された(AIまたは手動でApprovedになった)出典データが見つかりません。そのため出典注釈PDFをエクスポートできません。"
+        )
+        
+    base_dir = Path(__file__).resolve().parents[3]
+    uploads_dir = base_dir / "uploads"
+    
+    zip_filename = f"{session_id}_sources_annotated.zip"
+    zip_path = uploads_dir / zip_filename
+    
+    try:
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            # 1. Generate annotated PDF for File A (Calculation Sheet) and write to ZIP
+            pdf_path_a = Path(str(session.file_a_path))
+            if pdf_path_a.exists():
+                items_a = []
+                for item in check_items:
+                    items_a.append({
+                        "id": str(item.id),
+                        "label": str(item.label),
+                        "value": cast(float, item.value),
+                        "unit": str(item.unit),
+                        "page": cast(int, item.page),
+                        "bbox": cast(dict | None, item.bbox),
+                        "context": str(item.context)
+                    })
+                    
+                results_a = []
+                for r in match_results:
+                    check_item = next((ci for ci in check_items if ci.id == r.check_item_id), None)
+                    if not check_item:
+                        continue
+                    
+                    s_label = ""
+                    s_value = 0.0
+                    s_unit = ""
+                    s_page = 0
+                    
+                    if r.source_item_id:
+                        s_item = db.query(SourceItem).filter(SourceItem.id == r.source_item_id).first()
+                        if s_item:
+                            s_label = str(s_item.label)
+                            s_value = cast(float, s_item.value)
+                            s_unit = str(s_item.unit)
+                            s_page = cast(int, s_item.page)
+                            
+                    results_a.append({
+                        "check_item_id": str(r.check_item_id),
+                        "matched": r.status == "approved",
+                        "confidence": cast(float, r.confidence),
+                        "ai_reasoning": str(r.ai_reasoning),
+                        "matched_source_label": s_label,
+                        "matched_source_value": s_value,
+                        "matched_source_unit": s_unit,
+                        "matched_source_page": s_page
+                    })
+                
+                import re
+                raw_filename_a = pdf_path_a.name
+                clean_filename_a = re.sub(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_?", "", raw_filename_a)
+                if not clean_filename_a.endswith(".pdf"):
+                    clean_filename_a += ".pdf"
+                    
+                temp_output_path_a = uploads_dir / f"{session_id}_file_a_temp_annotated.pdf"
+                annotate_pdf_file_a(pdf_path_a, items_a, results_a, temp_output_path_a)
+                
+                zipf.write(temp_output_path_a, arcname=f"annotated_{clean_filename_a}")
+                if temp_output_path_a.exists():
+                    temp_output_path_a.unlink()
+
+            # 2. Generate annotated PDFs for File B (Source Documents) and write to ZIP
+            for doc_id in source_doc_ids:
+                doc = db.query(SourceDocument).filter(SourceDocument.id == doc_id).first()
+                if not doc:
+                    continue
+                
+                # Fetch items for this document
+                source_items = db.query(SourceItem).filter(SourceItem.document_id == doc_id).all()
+                source_items_data = []
+                for item in source_items:
+                    source_items_data.append({
+                        "id": str(item.id),
+                        "label": str(item.label),
+                        "value": float(item.value) if item.value is not None else 0.0,
+                        "unit": str(item.unit),
+                        "page": int(item.page),
+                        "bbox": item.bbox,
+                        "context_text": str(item.context_text)
+                    })
+                    
+                # Collect match results for this document
+                annot_results = []
+                for r in match_results:
+                    if r.source_item_id and r.status == "approved":
+                        s_item = next((si for si in source_items if si.id == r.source_item_id), None)
+                        if s_item:
+                            check_item = next((ci for ci in check_items if ci.id == r.check_item_id), None)
+                            if check_item:
+                                annot_results.append({
+                                    "source_item_id": str(r.source_item_id),
+                                    "mapping_id": matched_ids.get(r.check_item_id),
+                                    "check_item_label": str(check_item.label),
+                                    "check_item_value": float(check_item.value) if check_item.value is not None else 0.0,
+                                    "check_item_unit": str(check_item.unit),
+                                    "check_item_page": int(check_item.page),
+                                    "ai_reasoning": str(r.ai_reasoning)
+                                })
+                                
+                file_extension = Path(doc.filename).suffix or ".pdf"
+                orig_pdf_path = uploads_dir / f"{doc_id}{file_extension}"
+                if not orig_pdf_path.exists():
+                    continue
+                    
+                temp_output_path = uploads_dir / f"{session_id}_{doc_id}_temp_annotated.pdf"
+                
+                # Annotate PDF
+                annotate_pdf_file_b(orig_pdf_path, source_items_data, annot_results, temp_output_path)
+                
+                # Write to zip
+                arcname = f"annotated_{doc.title or doc.filename}"
+                if not arcname.endswith(".pdf"):
+                    arcname += ".pdf"
+                zipf.write(temp_output_path, arcname=arcname)
+                
+                # Delete temp file
+                if temp_output_path.exists():
+                    temp_output_path.unlink()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"ZIP一括エクスポートに失敗しました: {e}"
+        )
+        
+    return FileResponse(
+        path=zip_path,
+        media_type="application/zip",
+        filename="annotated_sources.zip"
+    )
+
+
+@router.post("/sessions/{session_id}/source-documents/{document_id}/export")
+def export_single_source_annotated_pdf(session_id: str, document_id: str, db: Session = Depends(get_db)):
+    session = db.query(CheckSession).filter(CheckSession.id == session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session with id {session_id} not found"
+        )
+        
+    doc = db.query(SourceDocument).filter(SourceDocument.id == document_id).first()
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Source document with id {document_id} not found"
+        )
+        
+    check_items = db.query(CheckItem).filter(CheckItem.session_id == session_id).all()
+    check_item_ids = [item.id for item in check_items]
+    match_results = db.query(MatchResult).filter(MatchResult.check_item_id.in_(check_item_ids)).all()
+    
+    # Generate mapping IDs to match File A's output
+    matched_ids = {}
+    matched_idx = 1
+    for r in match_results:
+        if r.status == "approved":
+            matched_ids[r.check_item_id] = f"c{matched_idx:02d}"
+            matched_idx += 1
+            
+    # Fetch source items
+    source_items = db.query(SourceItem).filter(SourceItem.document_id == document_id).all()
+    source_items_data = []
+    for item in source_items:
+        source_items_data.append({
+            "id": str(item.id),
+            "label": str(item.label),
+            "value": float(item.value) if item.value is not None else 0.0,
+            "unit": str(item.unit),
+            "page": int(item.page),
+            "bbox": item.bbox,
+            "context_text": str(item.context_text)
+        })
+        
+    # Collect match results for this document
+    annot_results = []
+    for r in match_results:
+        if r.source_item_id and r.status == "approved":
+            s_item = next((si for si in source_items if si.id == r.source_item_id), None)
+            if s_item:
+                check_item = next((ci for ci in check_items if ci.id == r.check_item_id), None)
+                if check_item:
+                    annot_results.append({
+                        "source_item_id": str(r.source_item_id),
+                        "mapping_id": matched_ids.get(r.check_item_id),
+                        "check_item_label": str(check_item.label),
+                        "check_item_value": float(check_item.value) if check_item.value is not None else 0.0,
+                        "check_item_unit": str(check_item.unit),
+                        "check_item_page": int(check_item.page),
+                        "ai_reasoning": str(r.ai_reasoning)
+                    })
+                    
+    base_dir = Path(__file__).resolve().parents[3]
+    uploads_dir = base_dir / "uploads"
+    
+    file_extension = Path(doc.filename).suffix or ".pdf"
+    orig_pdf_path = uploads_dir / f"{document_id}{file_extension}"
+    if not orig_pdf_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Original PDF file not found at: {orig_pdf_path}"
+        )
+        
+    output_filename = f"{session_id}_{document_id}_annotated.pdf"
+    output_path = uploads_dir / output_filename
+    
+    try:
+        annotate_pdf_file_b(orig_pdf_path, source_items_data, annot_results, output_path)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to annotate Source PDF: {e}"
+        )
+        
+    download_filename = f"annotated_{doc.title or doc.filename}"
+    if not download_filename.endswith(".pdf"):
+        download_filename += ".pdf"
+        
+    return FileResponse(
+        path=output_path,
+        media_type="application/pdf",
+        filename=download_filename
+    )

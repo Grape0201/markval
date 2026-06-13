@@ -140,3 +140,109 @@ def annotate_pdf_file_a(
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_pdf_path, "wb") as f_out:
         writer.write(f_out)
+
+
+def annotate_pdf_file_b(
+    pdf_path: Path,
+    source_items: list[dict],
+    results: list[dict],
+    output_pdf_path: Path
+) -> None:
+    if not pdf_path.exists():
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+
+    # Create a lookup for results based on source_item_id
+    results_lookup: dict[str, list[dict]] = {}
+    for r in results:
+        s_id = r.get("source_item_id")
+        if s_id:
+            if s_id not in results_lookup:
+                results_lookup[s_id] = []
+            results_lookup[s_id].append(r)
+
+    page_modifications: dict[int, list[tuple[dict, list[dict]]]] = {}
+    for item in source_items:
+        page_num = int(item["page"])
+        if page_num not in page_modifications:
+            page_modifications[page_num] = []
+        
+        # Only modify if this item has approved match results
+        item_results = results_lookup.get(item["id"], [])
+        approved_results = [r for r in item_results if r.get("mapping_id")]
+        if approved_results:
+            page_modifications[page_num].append((item, approved_results))
+
+    for i in range(len(reader.pages)):
+        page_num = i + 1
+        page = reader.pages[i]
+        
+        width = float(page.mediabox.width)
+        height = float(page.mediabox.height)
+        
+        if page_num in page_modifications:
+            packet = io.BytesIO()
+            can = canvas.Canvas(packet, pagesize=(width, height))
+            
+            for item, app_results in page_modifications[page_num]:
+                bbox = item.get("bbox")
+                if not bbox:
+                    continue
+                    
+                x0 = float(bbox["x0"])
+                y0 = float(bbox["y0"])
+                x1 = float(bbox["x1"])
+                y1 = float(bbox["y1"])
+                
+                rx0 = x0
+                rx1 = x1
+                ry0 = height - y1
+                ry1 = height - y0
+                
+                cx = rx0 + (rx1 - rx0) / 2
+                cy = ry1 + 2
+                
+                quads = [rx0, ry1, rx1, ry1, rx0, ry0, rx1, ry0]
+                
+                # Draw the mapping ID text. If multiple CheckItems matched, list them (e.g. "c01, c02")
+                ids_str = ", ".join([r["mapping_id"] for r in app_results])
+                
+                can.setFont("Helvetica-Bold", 8)
+                can.setFillColorRGB(0.0, 0.5, 0.7)  # Blueish color for File B
+                text_width = can.stringWidth(ids_str, "Helvetica-Bold", 8)
+                can.drawString(cx - text_width / 2, cy, ids_str)
+                
+                # Create detailed description for popup annotation
+                annot_lines = [f"[{ids_str}] Matched with Calculator"]
+                for r in app_results:
+                    annot_lines.append(
+                        f"-------------------\n"
+                        f"Calculated Item: {r.get('check_item_label')}\n"
+                        f"Value: {r.get('check_item_value')} {r.get('check_item_unit')} (Page {r.get('check_item_page')})\n"
+                        f"Reason: {r.get('ai_reasoning')}"
+                    )
+                annot_text = "\n".join(annot_lines)
+                
+                annot = HighlightAnnotation(
+                    Rect=[rx0, ry0, rx1, ry1],
+                    Contents=annot_text,
+                    QuadPoints=quads,
+                    Color=[0.82, 0.92, 0.94]  # Soft light blue highlight for source documents
+                )
+                can._addAnnotation(annot, name=None, addtopage=1)
+            
+            can.save()
+            packet.seek(0)
+            overlay_reader = PdfReader(packet)
+            if len(overlay_reader.pages) > 0:
+                overlay_page = overlay_reader.pages[0]
+                page.merge_page(overlay_page)
+            
+        writer.add_page(page)
+
+    output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_pdf_path, "wb") as f_out:
+        writer.write(f_out)
+
