@@ -570,9 +570,14 @@
                                             <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                                 抽出済み数値・パラメータ: <strong style="color: var(--accent-teal);" x-text="doc.item_count"></strong> 件
                                             </span>
-                                            <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;" @click="selectSourceDoc(doc)">
-                                                <i class="fa-solid fa-eye"></i> データを確認
-                                            </button>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem; border-color: var(--color-approved); color: var(--color-approved); background: var(--color-approved-bg);" @click.stop="exportExtractedSourcePdf(doc.id, doc.filename)">
+                                                    <i class="fa-solid fa-file-pdf"></i> 抽出結果PDF
+                                                </button>
+                                                <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;" @click="selectSourceDoc(doc)">
+                                                    <i class="fa-solid fa-eye"></i> データを確認
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <!-- Nested Extracted parameters list (collapsible on select) -->

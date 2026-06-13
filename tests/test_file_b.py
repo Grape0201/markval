@@ -1,5 +1,6 @@
 import io
 from unittest.mock import AsyncMock, patch
+from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -116,3 +117,62 @@ def test_upload_source_document_with_categories(mock_extract, client, db_session
     matched_doc = next((d for d in list_data if d["id"] == data["id"]), None)
     assert matched_doc is not None
     assert matched_doc["categories"] == ["固定荷重", "積載荷重"]
+
+
+@patch("app.routers.file_b.annotate_pdf_file_b_extracted")
+@patch("app.routers.file_b.extract_source_items_from_pdf", new_callable=AsyncMock)
+def test_export_extracted_source_pdf(mock_extract, mock_annotate, client, db_session):
+    mock_extract.return_value = [
+        {
+            "page": 1,
+            "label": "Test Item B",
+            "value": 12.3,
+            "unit": "kN/m2",
+            "context_text": "Dummy context",
+            "bbox": {"x0": 10, "y0": 20, "x1": 30, "y1": 40},
+            "category": "固定荷重"
+        }
+    ]
+    file_content = b"Dummy PDF content"
+    file_name = "test_doc_extracted.pdf"
+    
+    # 1. Upload
+    response = client.post(
+        "/api/v1/source-documents",
+        files={"file": (file_name, io.BytesIO(file_content), "application/pdf")},
+        data={"title": "Test Doc B", "version": "1.0"}
+    )
+    assert response.status_code == 201
+    doc_id = response.json()["id"]
+
+    # 2. Save dummy file to bypass exists() check
+    base_dir = Path(__file__).resolve().parents[2]
+    uploads_dir = base_dir / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    dummy_pdf_path = uploads_dir / f"{doc_id}.pdf"
+    dummy_pdf_path.write_bytes(file_content)
+
+    dummy_output_path = uploads_dir / f"extracted_{doc_id}.pdf"
+
+    def create_dummy_output(*args, **kwargs):
+        out_path = args[2]
+        out_path.write_bytes(b"Dummy annotated PDF content")
+
+    mock_annotate.side_effect = create_dummy_output
+
+    try:
+        # Call export endpoint
+        export_response = client.get(f"/api/v1/source-documents/{doc_id}/export-extracted")
+        assert export_response.status_code == 200
+        assert export_response.headers["content-type"] == "application/pdf"
+        assert "extracted_" in export_response.headers["content-disposition"]
+        
+        # Verify annotator was called
+        mock_annotate.assert_called_once()
+    finally:
+        # Clean up
+        if dummy_pdf_path.exists():
+            dummy_pdf_path.unlink()
+        if dummy_output_path.exists():
+            dummy_output_path.unlink()
+

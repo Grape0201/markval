@@ -324,6 +324,31 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        async exportExtractedSourcePdf(docId, docFilename) {
+            this.loading.export = true;
+            try {
+                const res = await fetch(`/api/v1/source-documents/${docId}/export-extracted`);
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || '抽出結果PDFのエクスポートに失敗しました。');
+                }
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `extracted_${docFilename || 'source.pdf'}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                this.showNotification(`出典「${docFilename}」の抽出結果PDFをダウンロードしました。`);
+            } catch (err) {
+                this.showNotification(err.message, 'error');
+            } finally {
+                this.loading.export = false;
+            }
+        },
+
         async exportSourceAnnotatedPdf(docId, docFilename) {
             if (!this.activeSession) return;
             
