@@ -1,0 +1,1506 @@
+{
+  "source": "a.json",
+  "pages": [
+    {
+      "page": 1,
+      "items": [
+        {
+          "label": "プロジェクト名",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "(仮称)サンプルビル 新築工事",
+          "formula_value": null,
+          "unit": null,
+          "context": "(仮称)サンプルビル 新築工事",
+          "source_block_ids": [
+            "B002/paragraph"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            639,
+            505,
+            1064,
+            596
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            639,
+            505,
+            1064,
+            596
+          ]
+        },
+        {
+          "label": "建物用途",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "事務所",
+          "formula_value": null,
+          "unit": null,
+          "context": "用途 | 事務所",
+          "source_block_ids": [
+            "T001-R4"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            375,
+            972,
+            1317,
+            1039
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            375,
+            972,
+            1317,
+            1039
+          ]
+        },
+        {
+          "label": "構造種別",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "鉄骨造",
+          "formula_value": null,
+          "unit": null,
+          "context": "構造 | 鉄骨造(ラーメン構造)",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            374,
+            1039,
+            1317,
+            1106
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            374,
+            1039,
+            1317,
+            1106
+          ]
+        },
+        {
+          "label": "構造形式",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "ラーメン構造",
+          "formula_value": null,
+          "unit": null,
+          "context": "構造 | 鉄骨造(ラーメン構造)",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            374,
+            1039,
+            1317,
+            1106
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            374,
+            1039,
+            1317,
+            1106
+          ]
+        },
+        {
+          "label": "階数",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "地上2階",
+          "formula_value": null,
+          "unit": null,
+          "context": "階数 | 地上2階",
+          "source_block_ids": [
+            "T001-R6"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            374,
+            1106,
+            1317,
+            1173
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            374,
+            1106,
+            1317,
+            1173
+          ]
+        },
+        {
+          "label": "建築面積",
+          "value_type": "numeric",
+          "numeric_value": 500.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "m2",
+          "context": "建築面積 | 500.00 m2",
+          "source_block_ids": [
+            "T001-R7"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            374,
+            1172,
+            1317,
+            1239
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            374,
+            1172,
+            1317,
+            1239
+          ]
+        },
+        {
+          "label": "延床面積",
+          "value_type": "numeric",
+          "numeric_value": 980.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "m2",
+          "context": "延床面積 | 980.00 m2",
+          "source_block_ids": [
+            "T001-R8"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            374,
+            1239,
+            1317,
+            1305
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            374,
+            1239,
+            1317,
+            1305
+          ]
+        },
+        {
+          "label": "準拠基準",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "建築基準法施行令",
+          "formula_value": null,
+          "unit": null,
+          "context": "本計算書は「建築基準法施行令」および「荷重指針2015年版」に準拠して作成した。",
+          "source_block_ids": [
+            "B003/paragraph"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            212,
+            1542,
+            1065,
+            1570
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            212,
+            1542,
+            1065,
+            1570
+          ]
+        },
+        {
+          "label": "準拠基準",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "荷重指針2015年版",
+          "formula_value": null,
+          "unit": null,
+          "context": "本計算書は「建築基準法施行令」および「荷重指針2015年版」に準拠して作成した。",
+          "source_block_ids": [
+            "B003/paragraph"
+          ],
+          "category": "その他",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            212,
+            1542,
+            1065,
+            1570
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            212,
+            1542,
+            1065,
+            1570
+          ]
+        },
+        {
+          "label": "屋根 固定荷重",
+          "value_type": "numeric",
+          "numeric_value": 1200.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "屋根 | 固定荷重 | 1,200 | 表4.1 / p.45 | 折板葺き+断熱材",
+          "source_block_ids": [
+            "T002-R2"
+          ],
+          "category": "固定荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1959,
+            1483,
+            2021
+          ],
+          "bbox_refined": [
+            811,
+            1974,
+            870,
+            2000
+          ],
+          "bbox": [
+            811,
+            1974,
+            870,
+            2000
+          ]
+        },
+        {
+          "label": "床(2階) 固定荷重",
+          "value_type": "numeric",
+          "numeric_value": 3500.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "床(2階) | 固定荷重 | 3,500 | 表4.2 / p.46 | OAフロア+スラブ",
+          "source_block_ids": [
+            "T002-R3"
+          ],
+          "category": "固定荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            2021,
+            1483,
+            2082
+          ],
+          "bbox_refined": [
+            809,
+            2035,
+            870,
+            2063
+          ],
+          "bbox": [
+            809,
+            2035,
+            870,
+            2063
+          ]
+        },
+        {
+          "label": "外壁 固定荷重",
+          "value_type": "numeric",
+          "numeric_value": 800.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "外壁 | 固定荷重 | 800 | 表4.3/p.47 | ALC 75mm",
+          "source_block_ids": [
+            "T002-R4"
+          ],
+          "category": "固定荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            208,
+            2082,
+            1482,
+            2142
+          ],
+          "bbox_refined": [
+            828,
+            2095,
+            870,
+            2123
+          ],
+          "bbox": [
+            828,
+            2095,
+            870,
+            2123
+          ]
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "items": [
+        {
+          "label": "内壁 固定荷重",
+          "value_type": "numeric",
+          "numeric_value": 350.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "内壁 固定荷重 350",
+          "source_block_ids": [
+            "B001",
+            "B002",
+            "B004"
+          ],
+          "category": "固定荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            222,
+            184,
+            871,
+            216
+          ],
+          "bbox_refined": [
+            827,
+            186,
+            871,
+            213
+          ],
+          "bbox": [
+            827,
+            186,
+            871,
+            213
+          ]
+        },
+        {
+          "label": "軽鉄間仕切り 固定荷重",
+          "value_type": "numeric",
+          "numeric_value": 350.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "軽鉄間仕切り 350",
+          "source_block_ids": [
+            "B004",
+            "B007"
+          ],
+          "category": "固定荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            828,
+            185,
+            1348,
+            215
+          ],
+          "bbox_refined": [
+            827,
+            186,
+            871,
+            213
+          ],
+          "bbox": [
+            827,
+            186,
+            871,
+            213
+          ]
+        },
+        {
+          "label": "事務室 積載荷重 床用",
+          "value_type": "numeric",
+          "numeric_value": 2900.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "事務室 | 2,900 | 1,800 | 1,300 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R2"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            535,
+            1413,
+            597
+          ],
+          "bbox_refined": [
+            699,
+            548,
+            759,
+            577
+          ],
+          "bbox": [
+            699,
+            548,
+            759,
+            577
+          ]
+        },
+        {
+          "label": "事務室 積載荷重 大梁・柱用",
+          "value_type": "numeric",
+          "numeric_value": 1800.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "事務室 | 2,900 | 1,800 | 1,300 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R2"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            535,
+            1413,
+            597
+          ],
+          "bbox_refined": [
+            920,
+            548,
+            979,
+            576
+          ],
+          "bbox": [
+            920,
+            548,
+            979,
+            576
+          ]
+        },
+        {
+          "label": "事務室 積載荷重 地震用",
+          "value_type": "numeric",
+          "numeric_value": 1300.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "事務室 | 2,900 | 1,800 | 1,300 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R2"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            535,
+            1413,
+            597
+          ],
+          "bbox_refined": [
+            1140,
+            550,
+            1199,
+            576
+          ],
+          "bbox": [
+            1140,
+            550,
+            1199,
+            576
+          ]
+        },
+        {
+          "label": "廊下・階段 積載荷重 床用",
+          "value_type": "numeric",
+          "numeric_value": 3500.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "廊下 · 階段 | 3,500 | 2,500 | 1,500 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R3"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            597,
+            1413,
+            658
+          ],
+          "bbox_refined": [
+            699,
+            610,
+            758,
+            637
+          ],
+          "bbox": [
+            699,
+            610,
+            758,
+            637
+          ]
+        },
+        {
+          "label": "廊下・階段 積載荷重 大梁・柱用",
+          "value_type": "numeric",
+          "numeric_value": 2500.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "廊下 · 階段 | 3,500 | 2,500 | 1,500 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R3"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            597,
+            1413,
+            658
+          ],
+          "bbox_refined": [
+            919,
+            610,
+            979,
+            637
+          ],
+          "bbox": [
+            919,
+            610,
+            979,
+            637
+          ]
+        },
+        {
+          "label": "廊下・階段 積載荷重 地震用",
+          "value_type": "numeric",
+          "numeric_value": 1500.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "廊下 · 階段 | 3,500 | 2,500 | 1,500 | 令85条 表1 |",
+          "source_block_ids": [
+            "T001-R3"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            597,
+            1413,
+            658
+          ],
+          "bbox_refined": [
+            1140,
+            611,
+            1199,
+            639
+          ],
+          "bbox": [
+            1140,
+            611,
+            1199,
+            639
+          ]
+        },
+        {
+          "label": "屋上(一般) 積載荷重 床用",
+          "value_type": "numeric",
+          "numeric_value": 1800.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "屋上(一般) | 1,800 | 1,300 | 600 | 令85条 表2 |",
+          "source_block_ids": [
+            "T001-R4"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            658,
+            1413,
+            719
+          ],
+          "bbox_refined": [
+            700,
+            672,
+            758,
+            700
+          ],
+          "bbox": [
+            700,
+            672,
+            758,
+            700
+          ]
+        },
+        {
+          "label": "屋上(一般) 積載荷重 大梁・柱用",
+          "value_type": "numeric",
+          "numeric_value": 1300.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "屋上(一般) | 1,800 | 1,300 | 600 | 令85条 表2 |",
+          "source_block_ids": [
+            "T001-R4"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            658,
+            1413,
+            719
+          ],
+          "bbox_refined": [
+            920,
+            672,
+            979,
+            700
+          ],
+          "bbox": [
+            920,
+            672,
+            979,
+            700
+          ]
+        },
+        {
+          "label": "屋上(一般) 積載荷重 地震用",
+          "value_type": "numeric",
+          "numeric_value": 600.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "屋上(一般) | 1,800 | 1,300 | 600 | 令85条 表2 |",
+          "source_block_ids": [
+            "T001-R4"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            658,
+            1413,
+            719
+          ],
+          "bbox_refined": [
+            1158,
+            672,
+            1201,
+            699
+          ],
+          "bbox": [
+            1158,
+            672,
+            1201,
+            699
+          ]
+        },
+        {
+          "label": "機械室 積載荷重 床用",
+          "value_type": "numeric",
+          "numeric_value": 5000.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "機械室 | 5,000 | 5,000 | 3,000 | 荷重指針 p.53 |",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            720,
+            1413,
+            780
+          ],
+          "bbox_refined": [
+            919,
+            732,
+            981,
+            762
+          ],
+          "bbox": [
+            919,
+            732,
+            981,
+            762
+          ]
+        },
+        {
+          "label": "機械室 積載荷重 大梁・柱用",
+          "value_type": "numeric",
+          "numeric_value": 5000.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "機械室 | 5,000 | 5,000 | 3,000 | 荷重指針 p.53 |",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            720,
+            1413,
+            780
+          ],
+          "bbox_refined": [
+            919,
+            732,
+            981,
+            762
+          ],
+          "bbox": [
+            919,
+            732,
+            981,
+            762
+          ]
+        },
+        {
+          "label": "機械室 積載荷重 地震用",
+          "value_type": "numeric",
+          "numeric_value": 3000.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m²",
+          "context": "機械室 | 5,000 | 5,000 | 3,000 | 荷重指針 p.53 |",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "積載荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            279,
+            720,
+            1413,
+            780
+          ],
+          "bbox_refined": [
+            1140,
+            734,
+            1199,
+            762
+          ],
+          "bbox": [
+            1140,
+            734,
+            1199,
+            762
+          ]
+        },
+        {
+          "label": "標準せん断力係数 Co",
+          "value_type": "numeric",
+          "numeric_value": 0.2,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "標準せん断力係数 | Co | 0.20 | 令88条第1項 | 一次設計 |",
+          "source_block_ids": [
+            "T002-R2"
+          ],
+          "category": "地震荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1164,
+            1482,
+            1226
+          ],
+          "bbox_refined": [
+            821,
+            1178,
+            870,
+            1205
+          ],
+          "bbox": [
+            821,
+            1178,
+            870,
+            1205
+          ]
+        },
+        {
+          "label": "地域係数 Z",
+          "value_type": "numeric",
+          "numeric_value": 1.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "地域係数 | Z | 1.0 | 令88条/告示 | 東京都 |",
+          "source_block_ids": [
+            "T002-R3"
+          ],
+          "category": "地震荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1226,
+            1482,
+            1287
+          ],
+          "bbox_refined": [
+            834,
+            1238,
+            871,
+            1267
+          ],
+          "bbox": [
+            834,
+            1238,
+            871,
+            1267
+          ]
+        },
+        {
+          "label": "振動特性係数 Rt",
+          "value_type": "numeric",
+          "numeric_value": 0.866,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "振動特性係数 | Rt | 0.866 | 令88条第2項 | Tc=0.6s, T=0.52s |",
+          "source_block_ids": [
+            "T002-R4"
+          ],
+          "category": "地震荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1287,
+            1482,
+            1348
+          ],
+          "bbox_refined": [
+            809,
+            1300,
+            870,
+            1326
+          ],
+          "bbox": [
+            809,
+            1300,
+            870,
+            1326
+          ]
+        },
+        {
+          "label": "地盤の種別",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "第二種",
+          "formula_value": null,
+          "unit": null,
+          "context": "地盤の種別 | 一 | 第二種 | 令88条第3項 | Tc=0.6s |",
+          "source_block_ids": [
+            "T002-R5"
+          ],
+          "category": "地震荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1348,
+            1482,
+            1410
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            209,
+            1348,
+            1482,
+            1410
+          ]
+        },
+        {
+          "label": "地震層せん断力係数 Ci",
+          "value_type": "numeric",
+          "numeric_value": 0.2,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "地震層せん断力係数 | Ci | 0.200 | 令88条 | CoxZxRt XAi |",
+          "source_block_ids": [
+            "T002-R6"
+          ],
+          "category": "地震荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            1410,
+            1482,
+            1470
+          ],
+          "bbox_refined": [
+            809,
+            1424,
+            870,
+            1450
+          ],
+          "bbox": [
+            809,
+            1424,
+            870,
+            1450
+          ]
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "items": [
+        {
+          "label": "基準風速 Vo",
+          "value_type": "numeric",
+          "numeric_value": 34.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "m/s",
+          "context": "基準風速 | Vo | 34 m/s | 告示第1454号 | 東京都",
+          "source_block_ids": [
+            "T001-R2"
+          ],
+          "category": "風荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            249,
+            1482,
+            311
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            209,
+            249,
+            1482,
+            311
+          ]
+        },
+        {
+          "label": "地表面粗度区分",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "III",
+          "formula_value": null,
+          "unit": null,
+          "context": "地表面粗度区分 | 一 | III | 令87条第2項 | 市街地",
+          "source_block_ids": [
+            "T001-R3"
+          ],
+          "category": "風荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            209,
+            311,
+            1482,
+            372
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            209,
+            311,
+            1482,
+            372
+          ]
+        },
+        {
+          "label": "ガスト影響係数 Gf",
+          "value_type": "numeric",
+          "numeric_value": 2.2,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "ガスト影響係数 | Gf | 2.2 | 荷重指針 p.128 | H=10m 粗度",
+          "source_block_ids": [
+            "T001-R4"
+          ],
+          "category": "風荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            208,
+            372,
+            1482,
+            433
+          ],
+          "bbox_refined": [
+            880,
+            384,
+            919,
+            412
+          ],
+          "bbox": [
+            880,
+            384,
+            919,
+            412
+          ]
+        },
+        {
+          "label": "ピーク速度圧 dp",
+          "value_type": "numeric",
+          "numeric_value": 1780.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/m2",
+          "context": "ピーク速度圧 | dp | 1,780 N/m2 | 荷重指針 式(7.8) | H=10m",
+          "source_block_ids": [
+            "T001-R5"
+          ],
+          "category": "風荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            208,
+            433,
+            1482,
+            495
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            208,
+            433,
+            1482,
+            495
+          ]
+        },
+        {
+          "label": "風力係数(壁面) Cf",
+          "value_type": "numeric",
+          "numeric_value": 1.2,
+          "text_value": null,
+          "formula_value": null,
+          "unit": null,
+          "context": "風力係数(壁面) | Cf | 1.2 | 荷重指針 表7.3 | 閉鎖型建物",
+          "source_block_ids": [
+            "T001-R6"
+          ],
+          "category": "風荷重",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            208,
+            495,
+            1482,
+            555
+          ],
+          "bbox_refined": [
+            882,
+            507,
+            919,
+            535
+          ],
+          "bbox": [
+            882,
+            507,
+            919,
+            535
+          ]
+        },
+        {
+          "label": "使用鋼材",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "SN400B",
+          "formula_value": null,
+          "unit": null,
+          "context": "使用鋼材はSN400B·SN490Bとし、許容応力度は建築基準法施行令第90条および「鋼構造設計規準」による。",
+          "source_block_ids": [
+            "B003/paragraph"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            212,
+            808,
+            1427,
+            841
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            212,
+            808,
+            1427,
+            841
+          ]
+        },
+        {
+          "label": "使用鋼材",
+          "value_type": "name",
+          "numeric_value": null,
+          "text_value": "SN490B",
+          "formula_value": null,
+          "unit": null,
+          "context": "使用鋼材はSN400B·SN490Bとし、許容応力度は建築基準法施行令第90条および「鋼構造設計規準」による。",
+          "source_block_ids": [
+            "B003/paragraph"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            212,
+            808,
+            1427,
+            841
+          ],
+          "bbox_refined": null,
+          "bbox": [
+            212,
+            808,
+            1427,
+            841
+          ]
+        },
+        {
+          "label": "SN400B 降伏点",
+          "value_type": "numeric",
+          "numeric_value": 235.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN400B | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R2"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            938,
+            1524,
+            1001
+          ],
+          "bbox_refined": [
+            631,
+            953,
+            672,
+            981
+          ],
+          "bbox": [
+            631,
+            953,
+            672,
+            981
+          ]
+        },
+        {
+          "label": "SN400B 引張強さ",
+          "value_type": "numeric",
+          "numeric_value": 400.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN400B | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R2"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            938,
+            1524,
+            1001
+          ],
+          "bbox_refined": [
+            913,
+            953,
+            955,
+            981
+          ],
+          "bbox": [
+            913,
+            953,
+            955,
+            981
+          ]
+        },
+        {
+          "label": "SN400B 長期許容応力度 ft",
+          "value_type": "numeric",
+          "numeric_value": 156.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN400B | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R2"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            938,
+            1524,
+            1001
+          ],
+          "bbox_refined": [
+            1292,
+            953,
+            1334,
+            981
+          ],
+          "bbox": [
+            1292,
+            953,
+            1334,
+            981
+          ]
+        },
+        {
+          "label": "SN490B 降伏点",
+          "value_type": "numeric",
+          "numeric_value": 325.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN490B | 325 | 490 | 215 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R3"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            1001,
+            1524,
+            1062
+          ],
+          "bbox_refined": [
+            627,
+            1010,
+            672,
+            1043
+          ],
+          "bbox": [
+            627,
+            1010,
+            672,
+            1043
+          ]
+        },
+        {
+          "label": "SN490B 引張強さ",
+          "value_type": "numeric",
+          "numeric_value": 490.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN490B | 325 | 490 | 215 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R3"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            1001,
+            1524,
+            1062
+          ],
+          "bbox_refined": [
+            913,
+            1015,
+            955,
+            1041
+          ],
+          "bbox": [
+            913,
+            1015,
+            955,
+            1041
+          ]
+        },
+        {
+          "label": "SN490B 長期許容応力度 ft",
+          "value_type": "numeric",
+          "numeric_value": 215.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SN490B | 325 | 490 | 215 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R3"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            168,
+            1001,
+            1524,
+            1062
+          ],
+          "bbox_refined": [
+            1291,
+            1013,
+            1335,
+            1042
+          ],
+          "bbox": [
+            1291,
+            1013,
+            1335,
+            1042
+          ]
+        },
+        {
+          "label": "SS400 降伏点",
+          "value_type": "numeric",
+          "numeric_value": 235.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SS400 | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R4"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            167,
+            1062,
+            1524,
+            1122
+          ],
+          "bbox_refined": [
+            631,
+            1074,
+            672,
+            1102
+          ],
+          "bbox": [
+            631,
+            1074,
+            672,
+            1102
+          ]
+        },
+        {
+          "label": "SS400 引張強さ",
+          "value_type": "numeric",
+          "numeric_value": 400.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SS400 | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R4"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            167,
+            1062,
+            1524,
+            1122
+          ],
+          "bbox_refined": [
+            913,
+            1074,
+            955,
+            1102
+          ],
+          "bbox": [
+            913,
+            1074,
+            955,
+            1102
+          ]
+        },
+        {
+          "label": "SS400 長期許容応力度 ft",
+          "value_type": "numeric",
+          "numeric_value": 156.0,
+          "text_value": null,
+          "formula_value": null,
+          "unit": "N/mm2",
+          "context": "SS400 | 235 | 400 | 156 | 令90条 表1",
+          "source_block_ids": [
+            "T002-R4"
+          ],
+          "category": "材料強度",
+          "block_id_valid": true,
+          "invalid_block_ids": [],
+          "bbox_coarse": [
+            167,
+            1062,
+            1524,
+            1122
+          ],
+          "bbox_refined": [
+            1292,
+            1074,
+            1335,
+            1102
+          ],
+          "bbox": [
+            1292,
+            1074,
+            1335,
+            1102
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 47,
+    "valid_block_ids": 47,
+    "refined_bbox": 32,
+    "block_id_accuracy": 1.0,
+    "refinement_rate": 0.6809
+  }
+}

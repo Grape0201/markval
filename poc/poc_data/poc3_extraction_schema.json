@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "ExtractedItem": {
+      "description": "LLM が返す抽出アイテム.",
+      "properties": {
+        "label": {
+          "description": "項目名（日本語。部位・荷重種別・パラメータ名等を組み合わせる。例: '屋根 固定荷重', 'SN400B 降伏点'）",
+          "title": "Label",
+          "type": "string"
+        },
+        "value_type": {
+          "description": "値の種類（現時点では 'numeric' のみ対応）",
+          "enum": [
+            "numeric",
+            "name",
+            "formula"
+          ],
+          "title": "Value Type",
+          "type": "string"
+        },
+        "numeric_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "数値（value_type='numeric' の場合。例: 1200, 0.20）",
+          "title": "Numeric Value"
+        },
+        "text_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "名称やテキスト値（value_type='name' の場合。例: 'SUS304'）",
+          "title": "Text Value"
+        },
+        "formula_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "数式（value_type='formula' の場合。LaTeX 形式推奨）",
+          "title": "Formula Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "単位（例: 'N/m²', 'N/mm²'。無単位の場合は None）",
+          "title": "Unit"
+        },
+        "context": {
+          "description": "抽出箇所の前後の文脈テキスト",
+          "title": "Context",
+          "type": "string"
+        },
+        "source_block_ids": {
+          "description": "抽出の根拠となったブロック ID リスト（例: ['T001-R2']）。与えられた ID の中から選択すること。存在しない ID を生成しないこと。",
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Block Ids",
+          "type": "array"
+        },
+        "category": {
+          "description": "分類カテゴリ",
+          "title": "Category",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value_type",
+        "context",
+        "source_block_ids",
+        "category"
+      ],
+      "title": "ExtractedItem",
+      "type": "object"
+    }
+  },
+  "description": "1 ページ分の抽出結果.",
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/ExtractedItem"
+      },
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "title": "PageExtraction",
+  "type": "object"
+}
