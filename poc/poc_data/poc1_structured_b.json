@@ -257,119 +257,98 @@
       "value": 2.0,
       "unit": "─",
       "page": 3,
-      "context_text": "地表面粗度区分Ⅱ 田園地帯・郊外"
-    },
-    {
-      "label": "地表面粗度区分Ⅱ Gf(その他)",
-      "value": 1.9,
-      "unit": "─",
-      "page": 3,
-      "context_text": "地表面粗度区分Ⅱ 田園地帯・郊外"
+      "context_text": "田園地帯・郊外"
     },
     {
       "label": "地表面粗度区分Ⅲ Gf(H=10m)",
       "value": 2.2,
       "unit": "─",
       "page": 3,
-      "context_text": "地表面粗度区分Ⅲ 一般市街地"
-    },
-    {
-      "label": "地表面粗度区分Ⅲ Gf(その他)",
-      "value": 2.0,
-      "unit": "─",
-      "page": 3,
-      "context_text": "地表面粗度区分Ⅲ 一般市街地"
+      "context_text": "一般市街地"
     },
     {
       "label": "地表面粗度区分Ⅳ Gf(H=10m)",
       "value": 2.5,
       "unit": "─",
       "page": 3,
-      "context_text": "地表面粗度区分Ⅳ 大都市中心部"
-    },
-    {
-      "label": "地表面粗度区分Ⅳ Gf(その他)",
-      "value": 2.2,
-      "unit": "─",
-      "page": 3,
-      "context_text": "地表面粗度区分Ⅳ 大都市中心部"
+      "context_text": "大都市中心部"
     },
     {
       "label": "閉鎖型（矩形） 風上壁 Cf",
       "value": 0.8,
       "unit": "─",
       "page": 3,
-      "context_text": "【表7.3】風力係数 Cf（外壁・屋根） 閉鎖型（矩形） 風上壁 0.8 正圧"
+      "context_text": "正圧"
     },
     {
       "label": "閉鎖型（矩形） 風下壁 Cf",
       "value": -0.4,
       "unit": "─",
       "page": 3,
-      "context_text": "【表7.3】風力係数 Cf（外壁・屋根） 閉鎖型（矩形） 風下壁 −0.4 負圧"
+      "context_text": "負圧"
     },
     {
       "label": "閉鎖型（矩形） 側壁 Cf",
       "value": -0.7,
       "unit": "─",
       "page": 3,
-      "context_text": "【表7.3】風力係数 Cf（外壁・屋根） 閉鎖型（矩形） 側壁 −0.7 負圧"
+      "context_text": "負圧"
     },
     {
       "label": "閉鎖型（矩形） 陸屋根 Cf",
       "value": -0.9,
       "unit": "─",
       "page": 3,
-      "context_text": "【表7.3】風力係数 Cf（外壁・屋根） 閉鎖型（矩形） 陸屋根 −0.9 負圧"
+      "context_text": "負圧"
     },
     {
       "label": "閉鎖型（矩形） 総合（壁面） Cf",
       "value": 1.2,
       "unit": "─",
       "page": 3,
-      "context_text": "【表7.3】風力係数 Cf（外壁・屋根） 閉鎖型（矩形） 総合（壁面） 1.2 風上＋風下合算"
+      "context_text": "風上＋風下合算"
     },
     {
       "label": "基準風速 Vo (東京都)",
       "value": 34.0,
       "unit": "m/s",
       "page": 3,
-      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp"
-    },
-    {
-      "label": "ガスト影響係数 Gf (粗度区分Ⅲ H=10m)",
-      "value": 2.2,
-      "unit": "─",
-      "page": 3,
-      "context_text": "ガスト影響係数 Gf 粗度Ⅲ H=10m（表7.1）"
+      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp の計算例"
     },
     {
       "label": "平均風速 Uz",
       "value": 22.4,
       "unit": "m/s",
       "page": 3,
-      "context_text": "平均風速 Uz = Vo × α（H/ZG）^α"
+      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp の計算例"
+    },
+    {
+      "label": "ガスト影響係数 Gf (粗度区分Ⅲ H=10m)",
+      "value": 2.2,
+      "unit": "─",
+      "page": 3,
+      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp の計算例"
     },
     {
       "label": "ピーク風速 Up",
       "value": 49.3,
       "unit": "m/s",
       "page": 3,
-      "context_text": "ピーク風速 Up = Gf × Uz"
+      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp の計算例"
     },
     {
       "label": "ピーク速度圧 qp",
       "value": 1780.0,
       "unit": "N/m²",
       "page": 3,
-      "context_text": "ピーク速度圧 qp = (1/2) × 1.22 × Up²"
+      "context_text": "東京都（Vo=34m/s）・粗度区分Ⅲ・H=10m の場合のピーク速度圧 qp の計算例"
     },
     {
       "label": "空気密度 ρ",
       "value": 1.22,
       "unit": "kg/m³",
       "page": 3,
-      "context_text": "空気密度は ρ = 1.22 kg/m³ を標準値として用いる（式7.8 解説）"
+      "context_text": "標準値として用いる（式7.8 解説）"
     }
   ]
 }
