@@ -64,17 +64,55 @@ class YomitokuProvider(OCRProvider):
 
     async def ocr_pdf(self, pdf_path: Path) -> list[dict[str, Any]]:
         """Yomitoku API に PDF を送信し、OCR 結果を取得する."""
+        import asyncio
+
         semaphore = get_yomitoku_semaphore()
         async with semaphore:
             async with httpx.AsyncClient(timeout=300.0) as client:
+                # 1. Upload
                 with pdf_path.open("rb") as f:
                     files = {"file": (pdf_path.name, f, "application/pdf")}
                     response = await client.post(
-                        f"{self._api_url}/ocr",
+                        f"{self._api_url}/ocr/upload",
                         files=files,
                     )
                 response.raise_for_status()
-                raw_pages: list[dict[str, Any]] = response.json()
+                task_id = response.json().get("task_id")
+                if not task_id:
+                    raise RuntimeError(
+                        "Failed to obtain task_id from Yomitoku upload endpoint"
+                    )
+
+                # 2. Poll status (SUCCESS / FAILURE)
+                # Max 300 seconds timeout
+                status = "PENDING"
+                for _ in range(300):
+                    status_response = await client.get(
+                        f"{self._api_url}/ocr/status/{task_id}"
+                    )
+                    status_response.raise_for_status()
+                    status_data = status_response.json()
+                    status = status_data.get("status")
+
+                    if status == "SUCCESS":
+                        break
+                    elif status == "FAILURE":
+                        error_detail = status_data.get("error", "Unknown error")
+                        raise RuntimeError(f"Yomitoku OCR task failed: {error_detail}")
+
+                    await asyncio.sleep(1.0)
+                else:
+                    raise TimeoutError(
+                        f"Yomitoku OCR task timed out for task_id: {task_id}"
+                    )
+
+                # 3. Retrieve final result
+                result_response = await client.get(
+                    f"{self._api_url}/ocr/result/{task_id}",
+                    params={"format": "json"},
+                )
+                result_response.raise_for_status()
+                raw_pages: list[dict[str, Any]] = result_response.json()
 
         # パースしてキャッシュ
         self._cached_pages = [Page.model_validate(p) for p in raw_pages]
