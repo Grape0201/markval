@@ -30,14 +30,44 @@ def token_overlap(s1: str, s2: str) -> float:
     return len(tokens1.intersection(tokens2)) / len(tokens1.union(tokens2))
 
 
+def _get_item_value_display(item: Any) -> str:
+    """アイテムの value_type に応じた表示用文字列を返す."""
+    vtype = getattr(item, "value_type", "numeric") or "numeric"
+    if vtype == "numeric":
+        val = cast(float, item.value) if item.value is not None else 0.0
+        unit = cast(str, item.unit) if item.unit else ""
+        return f"{val} {unit}".strip()
+    elif vtype == "name":
+        return str(item.text_value) if item.text_value else ""
+    elif vtype == "formula":
+        return str(item.formula_value) if item.formula_value else ""
+    return ""
+
+
 def calculate_candidate_score(check_item: CheckItem, item: SourceItem) -> float:
-    val1 = cast(float, check_item.value)
-    val2 = cast(float, item.value)
+    check_vtype = (cast(str, check_item.value_type) if check_item.value_type else "numeric")
+    item_vtype = (cast(str, item.value_type) if item.value_type else "numeric")
+
     num_score = 0.0
-    if abs(val1 - val2) < 1e-5:
-        num_score = 10.0
-    elif abs(val1 * 1000.0 - val2) < 1e-5 or abs(val1 - val2 * 1000.0) < 1e-5:
-        num_score = 8.0
+
+    if check_vtype == "numeric" and item_vtype == "numeric":
+        val1 = cast(float, check_item.value) if check_item.value is not None else 0.0
+        val2 = cast(float, item.value) if item.value is not None else 0.0
+        if abs(val1 - val2) < 1e-5:
+            num_score = 10.0
+        elif abs(val1 * 1000.0 - val2) < 1e-5 or abs(val1 - val2 * 1000.0) < 1e-5:
+            num_score = 8.0
+    elif check_vtype == "name" and item_vtype == "name":
+        check_text = str(check_item.text_value) if check_item.text_value else ""
+        item_text = str(item.text_value) if item.text_value else ""
+        if check_text and item_text:
+            if check_text == item_text:
+                num_score = 10.0
+            elif check_text in item_text or item_text in check_text:
+                num_score = 7.0
+    elif check_vtype == item_vtype:
+        # formula or other same-type match
+        num_score = 3.0
 
     label_sim = token_overlap(cast(str, check_item.label), cast(str, item.label))
     context_sim = token_overlap(
@@ -140,11 +170,12 @@ async def match_check_item(
 
     candidates_formatted = []
     for idx, item in enumerate(top_candidates):
+        value_display = _get_item_value_display(item)
         candidates_formatted.append(
             f"候補 [{idx}]:\n"
             f"  項目名: {cast(str, item.label)}\n"
-            f"  数値: {cast(float, item.value)}\n"
-            f"  単位: {cast(str, item.unit)}\n"
+            f"  値: {value_display}\n"
+            f"  単位: {cast(str, item.unit) if item.unit else 'なし'}\n"
             f"  ページ番号: {cast(int, item.page)}\n"
             f"  文脈: {cast(str, item.context_text)}\n"
         )
@@ -152,14 +183,18 @@ async def match_check_item(
 
     chain = prompt | llm.with_structured_output(SingleMatchResponse)
 
+    check_value_display = _get_item_value_display(check_item)
+
     semaphore = get_llm_semaphore()
     try:
         async with semaphore:
             response = await chain.ainvoke(
                 {
                     "check_label": cast(str, check_item.label),
-                    "check_value": cast(float, check_item.value),
-                    "check_unit": cast(str, check_item.unit),
+                    "check_value": check_value_display,
+                    "check_unit": cast(str, check_item.unit)
+                    if check_item.unit
+                    else "なし",
                     "check_page": cast(int, check_item.page),
                     "check_context": cast(str, check_item.context),
                     "check_hint": cast(str, check_item.source_hint)

@@ -45,11 +45,15 @@ class SourceItemResponse(BaseModel):
     document_id: str
     page: int
     label: str
-    value: float
-    unit: str
+    value_type: str = "numeric"
+    value: float | None = None
+    text_value: str | None = None
+    formula_value: str | None = None
+    unit: str | None = None
     context_text: str
     bbox: dict | None = None
     category: str | None = None
+    source_block_ids: list[str] | None = None
 
     class Config:
         from_attributes = True
@@ -147,11 +151,15 @@ async def upload_source_document(
             document_id=doc_id,
             page=int(item["page"]),
             label=str(item["label"]),
-            value=float(item["value"]),
-            unit=str(item["unit"]),
+            value_type=str(item.get("value_type", "numeric")),
+            value=float(item["value"]) if item.get("value") is not None else None,
+            text_value=item.get("text_value"),
+            formula_value=item.get("formula_value"),
+            unit=str(item["unit"]) if item.get("unit") else None,
             context_text=str(item["context_text"]),
             bbox=item.get("bbox"),
             category=item.get("category"),
+            source_block_ids=item.get("source_block_ids"),
         )
         db.add(source_item)
 
@@ -222,11 +230,15 @@ def get_source_document_items(document_id: str, db: Session = Depends(get_db)):
                 document_id=str(item.document_id),
                 page=cast(int, item.page),
                 label=str(item.label),
-                value=cast(float, item.value),
-                unit=str(item.unit),
+                value_type=str(item.value_type) if item.value_type else "numeric",
+                value=cast(float | None, item.value),
+                text_value=str(item.text_value) if item.text_value else None,
+                formula_value=str(item.formula_value) if item.formula_value else None,
+                unit=str(item.unit) if item.unit else None,
                 context_text=str(item.context_text),
                 bbox=cast(dict | None, item.bbox),
                 category=str(item.category) if item.category else None,
+                source_block_ids=cast(list[str] | None, item.source_block_ids),
             )
         )
     return results

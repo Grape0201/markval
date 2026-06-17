@@ -1,92 +1,59 @@
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-from reportlab.pdfgen import canvas
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.document_providers import LocalProvider, YomitokuProvider
-
-def create_dummy_pdf(path: Path, text: str, value_str: str = "1200.0") -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    c = canvas.Canvas(str(path))
-    # Write text and a numerical value at specific coordinates
-    # reportlab coordinates: origin is bottom-left of the page
-    c.drawString(100, 750, f"{text} {value_str}")
-    c.showPage()
-    c.save()
+from app.services.document_providers import YomitokuProvider
+from app.services.yomitoku_models import Page
 
 
 @pytest.mark.anyio
-async def test_local_provider_extract_and_annotate(tmp_path):
-    pdf_path = tmp_path / "dummy_local.pdf"
-    create_dummy_pdf(pdf_path, "Test Document Page 1", "1200.0")
+async def test_yomitoku_provider_ocr_pdf(tmp_path):
+    pdf_path = tmp_path / "dummy.pdf"
+    pdf_path.write_bytes(b"dummy pdf contents")
 
-    provider = LocalProvider()
+    provider = YomitokuProvider(api_url="http://mock-ocr-api")
 
-    # 1. Test extraction
-    # Mock MarkItDown conversion to avoid dependency oddities or external calls
-    mock_convert_result = MagicMock()
-    mock_convert_result.text_content = "Test Document Page 1 1200.0"
-    
-    with patch("app.services.document_providers.MarkItDown") as mock_markitdown:
-        mock_instance = MagicMock()
-        mock_instance.convert_stream.return_value = mock_convert_result
-        mock_markitdown.return_value = mock_instance
-
-        pages = await provider.extract_markdown_pages(pdf_path)
-        assert len(pages) == 1
-        assert pages[0]["page"] == 1
-        assert "1200.0" in pages[0]["markdown"]
-
-    # 2. Test annotation
-    # Items to annotate
-    items = [
+    # Mock response data representing parsed Page
+    mock_response_data = [
         {
-            "label": "Test Item",
-            "value": 1200.0,
-            "page": 1,
-            "context": "Test Document Page 1 1200.0"
+            "paragraphs": [
+                {
+                    "box": [0, 0, 100, 50],
+                    "contents": "Test paragraph text",
+                    "direction": "horizontal",
+                    "order": 1,
+                    "role": "text"
+                }
+            ],
+            "tables": [],
+            "words": [],
+            "figures": []
         }
     ]
 
-    annotated = provider.annotate(pdf_path, items)
-    assert len(annotated) == 1
-    bbox = annotated[0]["bbox"]
-    assert bbox is not None
-    assert "x0" in bbox
-    assert "y0" in bbox
-    assert "x1" in bbox
-    assert "y1" in bbox
+    # Mock httpx.AsyncClient.post response
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mock_response_data
+    mock_response.raise_for_status = MagicMock()
 
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.return_value = mock_response
 
-@pytest.mark.anyio
-async def test_yomitoku_provider_extract_and_annotate(tmp_path):
-    pdf_path = tmp_path / "dummy_yomitoku.pdf"
-    create_dummy_pdf(pdf_path, "Yomitoku Text", "100.0")
+        # Execute OCR
+        raw_result = await provider.ocr_pdf(pdf_path)
 
-    provider = YomitokuProvider()
+        # Verify raw result matches
+        assert raw_result == mock_response_data
 
-    # 1. Test extraction (will call _call_yomitoku_api under the hood)
-    pages = await provider.extract_markdown_pages(pdf_path)
-    assert len(pages) == 1
-    assert pages[0]["page"] == 1
-    assert "Yomitoku OCR Page 1" in pages[0]["markdown"]
+        # Verify call arguments
+        mock_post.assert_called_once()
+        args, kwargs = mock_post.call_args
+        assert args[0] == "http://mock-ocr-api/ocr"
+        assert "files" in kwargs
 
-    # 2. Test annotation using cached layout from the Yomitoku mock response
-    items = [
-        {
-            "label": "Example target value",
-            "value": 100.0,
-            "page": 1,
-            "context_text": "Example target value: 100.0 on page 1"
-        }
-    ]
-
-    annotated = provider.annotate(pdf_path, items)
-    assert len(annotated) == 1
-    bbox = annotated[0]["bbox"]
-    assert bbox is not None
-    # The dummy response has box: [50.0, 100.0, 200.0, 120.0]
-    assert bbox["x0"] == 50.0
-    assert bbox["y0"] == 100.0
-    assert bbox["x1"] == 200.0
-    assert bbox["y1"] == 120.0
+    # Verify cached pages are parsed into Pydantic models correctly
+    cached_pages = provider.get_ocr_pages()
+    assert len(cached_pages) == 1
+    assert isinstance(cached_pages[0], Page)
+    assert len(cached_pages[0].paragraphs) == 1
+    assert cached_pages[0].paragraphs[0].contents == "Test paragraph text"
