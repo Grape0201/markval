@@ -1,8 +1,18 @@
 import io
 from pathlib import Path
 from pypdf import PdfReader, PdfWriter
+from pypdf.annotations import Highlight
+from pypdf.generic import ArrayObject, FloatObject
 from reportlab.pdfgen import canvas
-from reportlab.pdfbase.pdfdoc import HighlightAnnotation
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+
+# Register built-in Japanese font to ensure Japanese support in PDF resources
+pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5'))
+
+# Yomitoku OCR は 200 DPI で画像化して認識するため、
+# PDF ポイント座標系 (72 DPI) への変換係数は 72 / 200 = 0.36
+SCALE_FACTOR = 72.0 / 200.0
 
 
 def draw_warning_mark(can: canvas.Canvas, cx: float, cy: float) -> None:
@@ -59,19 +69,27 @@ def annotate_pdf_file_a(
         width = float(page.mediabox.width)
         height = float(page.mediabox.height)
 
+        page_highlights = []
         if page_num in page_modifications:
             packet = io.BytesIO()
             can = canvas.Canvas(packet, pagesize=(width, height))
+            can.setFont('HeiseiKakuGo-W5', 8)
 
             for item, result in page_modifications[page_num]:
                 bbox = item.get("bbox")
                 if not bbox:
                     continue
 
-                x0 = float(bbox["x0"])
-                y0 = float(bbox["y0"])
-                x1 = float(bbox["x1"])
-                y1 = float(bbox["y1"])
+                if isinstance(bbox, dict):
+                    x0 = float(bbox["x0"])
+                    y0 = float(bbox["y0"])
+                    x1 = float(bbox["x1"])
+                    y1 = float(bbox["y1"])
+                else:
+                    x0 = float(bbox[0])
+                    y0 = float(bbox[1])
+                    x1 = float(bbox[2])
+                    y1 = float(bbox[3])
 
                 rx0 = x0
                 rx1 = x1
@@ -93,42 +111,21 @@ def annotate_pdf_file_a(
                         text_width = can.stringWidth(id_str, "Helvetica-Bold", 8)
                         can.drawString(cx - text_width / 2, cy, id_str)
 
-                        annot_text = (
-                            f"[{id_str}] Approved by AI\n"
-                            f"Source: {result.get('matched_source_label')}\n"
-                            f"Value: {result.get('matched_source_value')} {result.get('matched_source_unit')} (Page {result.get('matched_source_page')})\n"
-                            f"Reason: {result.get('ai_reasoning')}"
+                        highlight = Highlight(
+                            rect=(rx0, ry0, rx1, ry1),
+                            quad_points=ArrayObject([FloatObject(x) for x in quads]),
+                            highlight_color="d1f0d1"
                         )
-
-                        annot = HighlightAnnotation(
-                            Rect=[rx0, ry0, rx1, ry1],
-                            Contents=annot_text,
-                            QuadPoints=quads,
-                            Color=[0.82, 0.94, 0.82],
-                        )
-                        can._addAnnotation(annot, name=None, addtopage=1)
+                        page_highlights.append(highlight)
                 else:
                     draw_warning_mark(can, cx, cy)
 
-                    reason = (
-                        result.get("ai_reasoning")
-                        if result
-                        else "No matching guideline found in reference documents."
+                    highlight = Highlight(
+                        rect=(rx0, ry0, rx1, ry1),
+                        quad_points=ArrayObject([FloatObject(x) for x in quads]),
+                        highlight_color="ffd9d9"
                     )
-                    annot_text = (
-                        f"Unmatched Item\n"
-                        f"Label: {item['label']}\n"
-                        f"Value: {item['value']} {item['unit']}\n"
-                        f"AI Reasoning: {reason}"
-                    )
-
-                    annot = HighlightAnnotation(
-                        Rect=[rx0, ry0, rx1, ry1],
-                        Contents=annot_text,
-                        QuadPoints=quads,
-                        Color=[1.0, 0.85, 0.85],
-                    )
-                    can._addAnnotation(annot, name=None, addtopage=1)
+                    page_highlights.append(highlight)
 
             can.save()
             packet.seek(0)
@@ -138,6 +135,10 @@ def annotate_pdf_file_a(
                 page.merge_page(overlay_page)
 
         writer.add_page(page)
+
+        if page_num in page_modifications:
+            for hl in page_highlights:
+                writer.add_annotation(page_number=i, annotation=hl)
 
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_pdf_path, "wb") as f_out:
@@ -181,19 +182,33 @@ def annotate_pdf_file_b(
         width = float(page.mediabox.width)
         height = float(page.mediabox.height)
 
+        page_highlights = []
         if page_num in page_modifications:
             packet = io.BytesIO()
             can = canvas.Canvas(packet, pagesize=(width, height))
+            can.setFont('HeiseiKakuGo-W5', 8)
 
             for item, app_results in page_modifications[page_num]:
                 bbox = item.get("bbox")
                 if not bbox:
                     continue
 
-                x0 = float(bbox["x0"])
-                y0 = float(bbox["y0"])
-                x1 = float(bbox["x1"])
-                y1 = float(bbox["y1"])
+                if isinstance(bbox, dict):
+                    x0 = float(bbox["x0"])
+                    y0 = float(bbox["y0"])
+                    x1 = float(bbox["x1"])
+                    y1 = float(bbox["y1"])
+                else:
+                    x0 = float(bbox[0])
+                    y0 = float(bbox[1])
+                    x1 = float(bbox[2])
+                    y1 = float(bbox[3])
+
+                # スケーリング (pixel -> point)
+                x0 *= SCALE_FACTOR
+                y0 *= SCALE_FACTOR
+                x1 *= SCALE_FACTOR
+                y1 *= SCALE_FACTOR
 
                 rx0 = x0
                 rx1 = x1
@@ -213,28 +228,12 @@ def annotate_pdf_file_b(
                 text_width = can.stringWidth(ids_str, "Helvetica-Bold", 8)
                 can.drawString(cx - text_width / 2, cy, ids_str)
 
-                # Create detailed description for popup annotation
-                annot_lines = [f"[{ids_str}] Matched with Calculator"]
-                for r in app_results:
-                    annot_lines.append(
-                        f"-------------------\n"
-                        f"Calculated Item: {r.get('check_item_label')}\n"
-                        f"Value: {r.get('check_item_value')} {r.get('check_item_unit')} (Page {r.get('check_item_page')})\n"
-                        f"Reason: {r.get('ai_reasoning')}"
-                    )
-                annot_text = "\n".join(annot_lines)
-
-                annot = HighlightAnnotation(
-                    Rect=[rx0, ry0, rx1, ry1],
-                    Contents=annot_text,
-                    QuadPoints=quads,
-                    Color=[
-                        0.82,
-                        0.92,
-                        0.94,
-                    ],  # Soft light blue highlight for source documents
+                highlight = Highlight(
+                    rect=(rx0, ry0, rx1, ry1),
+                    quad_points=ArrayObject([FloatObject(x) for x in quads]),
+                    highlight_color="d1ebf0"
                 )
-                can._addAnnotation(annot, name=None, addtopage=1)
+                page_highlights.append(highlight)
 
             can.save()
             packet.seek(0)
@@ -244,6 +243,10 @@ def annotate_pdf_file_b(
                 page.merge_page(overlay_page)
 
         writer.add_page(page)
+
+        if page_num in page_modifications:
+            for hl in page_highlights:
+                writer.add_annotation(page_number=i, annotation=hl)
 
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_pdf_path, "wb") as f_out:
@@ -273,19 +276,33 @@ def annotate_pdf_file_b_extracted(
         width = float(page.mediabox.width)
         height = float(page.mediabox.height)
 
+        page_highlights = []
         if page_num in page_modifications:
             packet = io.BytesIO()
             can = canvas.Canvas(packet, pagesize=(width, height))
+            can.setFont('HeiseiKakuGo-W5', 8)
 
             for item in page_modifications[page_num]:
                 bbox = item.get("bbox")
                 if not bbox:
                     continue
 
-                x0 = float(bbox["x0"])
-                y0 = float(bbox["y0"])
-                x1 = float(bbox["x1"])
-                y1 = float(bbox["y1"])
+                if isinstance(bbox, dict):
+                    x0 = float(bbox["x0"])
+                    y0 = float(bbox["y0"])
+                    x1 = float(bbox["x1"])
+                    y1 = float(bbox["y1"])
+                else:
+                    x0 = float(bbox[0])
+                    y0 = float(bbox[1])
+                    x1 = float(bbox[2])
+                    y1 = float(bbox[3])
+
+                # スケーリング (pixel -> point)
+                x0 *= SCALE_FACTOR
+                y0 *= SCALE_FACTOR
+                x1 *= SCALE_FACTOR
+                y1 *= SCALE_FACTOR
 
                 rx0 = x0
                 rx1 = x1
@@ -299,9 +316,6 @@ def annotate_pdf_file_b_extracted(
 
                 label = item.get("label", "")
                 val = item.get("value", 0.0)
-                unit = item.get("unit", "")
-                category = item.get("category", "")
-                context = item.get("context_text", "")
 
                 disp_str = f"{label}: {val}"
                 if len(disp_str) > 15:
@@ -312,21 +326,12 @@ def annotate_pdf_file_b_extracted(
                 text_width = can.stringWidth(disp_str, "Helvetica-Bold", 6)
                 can.drawString(cx - text_width / 2, cy, disp_str)
 
-                annot_text = (
-                    f"Extracted Source Item\n"
-                    f"Label: {label}\n"
-                    f"Value: {val} {unit}\n"
-                    f"Category: {category or 'None'}\n"
-                    f"Context: {context}"
+                highlight = Highlight(
+                    rect=(rx0, ry0, rx1, ry1),
+                    quad_points=ArrayObject([FloatObject(x) for x in quads]),
+                    highlight_color="ffe699"
                 )
-
-                annot = HighlightAnnotation(
-                    Rect=[rx0, ry0, rx1, ry1],
-                    Contents=annot_text,
-                    QuadPoints=quads,
-                    Color=[1.0, 0.9, 0.6],  # Soft light orange/yellow
-                )
-                can._addAnnotation(annot, name=None, addtopage=1)
+                page_highlights.append(highlight)
 
             can.save()
             packet.seek(0)
@@ -336,6 +341,10 @@ def annotate_pdf_file_b_extracted(
                 page.merge_page(overlay_page)
 
         writer.add_page(page)
+
+        if page_num in page_modifications:
+            for hl in page_highlights:
+                writer.add_annotation(page_number=i, annotation=hl)
 
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_pdf_path, "wb") as f_out:

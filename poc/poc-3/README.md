@@ -100,6 +100,7 @@ class ExtractedItem(BaseModel):
 | `step2_extract_with_ids.py` | LLM 構造化抽出（`--dry-run` / `--load-responses` 対応） |
 | `step3_resolve_bbox.py` | ブロック ID → Bbox 解決 + Phase 2 精密検索 |
 | `step4_report.py` | CSV レポート + 検証サマリー出力 |
+| `step5_annotate_pdf.py` | PDF アノテーション（ハイライト・注釈付与） |
 | `run_all.sh` | パイプライン実行スクリプト |
 
 ### 実行方法
@@ -120,6 +121,9 @@ bash run_all.sh --step2-llm
 
 # Step 3 + 4: Bbox 解決 + レポート
 bash run_all.sh --step3-4
+
+# Step 5: PDF アノテーション（ファイルBを対象）
+bash run_all.sh --step5
 ```
 
 ## 検証結果
