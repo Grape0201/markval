@@ -17,11 +17,11 @@ import argparse
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel
 
-from models import DocumentBlocks, ExtractedItem, PageExtraction
+from models import DocumentBlocks, PageExtraction
 
 from dotenv import load_dotenv
 
@@ -61,11 +61,15 @@ SYSTEM_PROMPT_A = """\
 - 地震関連パラメータ（Co, Z, Rt, Ci 等の数値）
 - 風荷重パラメータ（Vo, Gf, qp, Cf 等の数値）
 - 材料強度（鋼材種別ごとの降伏点、引張強さ、長期許容応力度 ft の N/mm² 値）
-- 地盤種別・構造種別・材料名称などのテキスト型パラメータ（例: 第二種, 地表面粗度区分III, SN400B 等）
+- 地盤種別・構造種別・材料名称など、設計条件として指定され照合対象（ファイルBと一致するかチェックする対象）となるテキスト型パラメータ（例: 第二種, 地表面粗度区分III, SN400B 等）
+
+【抽出してはいけないもの（除外対象）】
+- 数値の「適用条件」「備考」「範囲」「補足説明」といったテキスト情報（例：「厚さ 0.8mm + 断熱 50mm」「日本瓦標準」「アスファルト防水」「フローリング 15mm」など）。これらは照合の対象外であるため、絶対に抽出しないでください。
 
 【value_type の使い分け】
 - "numeric": 数値で表されるパラメータ（荷重値、係数、強度 等）→ numeric_value に数値を設定
-- "name": 種別・名称・区分などテキストで表されるパラメータ（地盤種別「第二種」、粗度区分「III」等）→ text_value にテキストを設定
+- "name": 設計条件の区分・名称そのものを表すテキスト（例：地盤種別「第二種」、地表面粗度区分「III」、使用鋼材「SN400B」等）→ text_value にテキストを設定
+  ※注意：単なる備考、適用条件、補足説明（例：「厚さ 0.8mm」「日本瓦標準」「アスファルト防水」など）は value_type が "name" であっても抽出対象外です。
 - "formula": 数式（現時点では未使用）
 
 【重要ルール】
@@ -89,11 +93,15 @@ SYSTEM_PROMPT_B = """\
 【抽出対象】
 - 各部位の固定荷重標準値、積載荷重、風荷重などの数値データ
 - 積載荷重は「床用」「大梁・柱用」「地震用」などの区分がある場合は、それぞれの数値を別々の項目として抽出してください
-- 地盤種別・粗度区分・材料名称などのテキスト型パラメータ
+- 地盤種別・地表面粗度区分・材料名称など、設計条件として指定され照合対象（ファイルAと一致するかチェックする対象）となるテキスト型パラメータ
+
+【抽出してはいけないもの（除外対象）】
+- 数値の「適用条件」「備考」「範囲」「補足説明」といったテキスト情報（例：「厚さ 0.8mm + 断熱 50mm」「日本瓦標準」「アスファルト防水」「フローリング 15mm」「海岸・湖岸等」「一般市街地」など）。これらは照合の対象外であるため、絶対に抽出しないでください。
 
 【value_type の使い分け】
 - "numeric": 数値で表されるパラメータ（荷重値、係数、強度 等）→ numeric_value に数値を設定
-- "name": 種別・名称・区分などテキストで表されるパラメータ → text_value にテキストを設定
+- "name": 設計条件の区分・名称そのものを表すテキスト（例：地盤種別「第二種」、地表面粗度区分「III」、使用鋼材「SN400B」等）→ text_value にテキストを設定
+  ※注意：単なる備考、適用条件、補足説明（例：「厚さ 0.8mm」「日本瓦標準」「アスファルト防水」など）は value_type が "name" であっても抽出対象外です。
 - "formula": 数式（現時点では未使用）
 
 【重要ルール】
@@ -169,7 +177,7 @@ async def call_llm(prompt: PromptSet) -> PageExtraction:
     )
     chain = chat_prompt | llm.with_structured_output(PageExtraction)
     result = await chain.ainvoke({"text": prompt.user})
-    return result
+    return cast(PageExtraction, result)
 
 
 # ---------------------------------------------------------------------------
