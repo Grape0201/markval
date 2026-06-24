@@ -62,6 +62,13 @@ run_step4() {
     uv run python step4_report.py
 }
 
+run_step5() {
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Step 5: Annotate File B PDF"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    uv run python step5_annotate_pdf.py
+}
+
 case "${1:---help}" in
     --step1)
         run_step1
@@ -79,11 +86,15 @@ case "${1:---help}" in
         run_step3
         run_step4
         ;;
+    --step5)
+        run_step5
+        ;;
     --all)
         run_step1
         run_step2_llm
         run_step3
         run_step4
+        run_step5
         ;;
     --help|-h)
         echo "Usage: bash run_all.sh [OPTION]"
@@ -94,6 +105,7 @@ case "${1:---help}" in
         echo "  --step2-load  Step 2 手動 LLM レスポンス読み込み"
         echo "  --step2-llm   Step 2 LLM 呼び出し（API キー必要）"
         echo "  --step3-4     Step 3 + 4（Bbox 解決 + レポート）"
+        echo "  --step5       Step 5 のみ（PDF アノテーション）"
         echo "  --all         全ステップ実行"
         echo "  --help        このヘルプを表示"
         ;;

@@ -1,7 +1,7 @@
 import io
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 from sqlalchemy.orm import Session
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -30,6 +30,20 @@ def format_value_unit(val: float, unit: str) -> str:
         else:
             formatted_val = f"{int(val_str):,}"
     return f"{formatted_val} {unit}"
+
+
+def format_item_value(item: Any) -> str:
+    """value_type に応じたアイテム値の表示文字列を返す."""
+    vtype = getattr(item, "value_type", "numeric") or "numeric"
+    if vtype == "numeric":
+        val = float(item.value) if item.value is not None else 0.0
+        unit = str(item.unit) if item.unit else ""
+        return format_value_unit(val, unit)
+    elif vtype == "name":
+        return str(item.text_value) if item.text_value else ""
+    elif vtype == "formula":
+        return str(item.formula_value) if item.formula_value else ""
+    return ""
 
 
 def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
@@ -92,9 +106,7 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
                     )
                     if s_doc:
                         source_filename = cast(str, s_doc.filename)
-                    source_val_unit = format_value_unit(
-                        cast(float, s_item.value), cast(str, s_item.unit)
-                    )
+                    source_val_unit = format_item_value(s_item)
                     source_page_str = str(s_item.page)
 
         results_data.append(
@@ -102,9 +114,7 @@ def generate_excel_report(db: Session, session_id: str) -> io.BytesIO:
                 "annotation_id": annotation_id,
                 "status": status_str,
                 "item_label": item.label,
-                "calc_val_unit": format_value_unit(
-                    cast(float, item.value), cast(str, item.unit)
-                ),
+                "calc_val_unit": format_item_value(item),
                 "calc_page": str(item.page),
                 "source_filename": source_filename,
                 "source_val_unit": source_val_unit,

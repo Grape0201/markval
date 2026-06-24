@@ -33,13 +33,17 @@ class CheckItemResponse(BaseModel):
     id: str
     session_id: str
     label: str
-    value: float
-    unit: str
+    value_type: str = "numeric"
+    value: float | None = None
+    text_value: str | None = None
+    formula_value: str | None = None
+    unit: str | None = None
     bbox: dict | None
     page: int
     context: str
     source_hint: str | None
     category: str | None = None
+    source_block_ids: list[str] | None = None
 
     class Config:
         from_attributes = True
@@ -47,8 +51,11 @@ class CheckItemResponse(BaseModel):
 
 class SourceItemInfo(BaseModel):
     label: str
-    value: float
-    unit: str
+    value_type: str = "numeric"
+    value: float | None = None
+    text_value: str | None = None
+    formula_value: str | None = None
+    unit: str | None = None
     page: int
     context_text: str
     category: str | None = None
@@ -59,8 +66,10 @@ class MatchResultResponse(BaseModel):
     id: str
     check_item_id: str
     check_item_label: str
-    check_item_value: float
-    check_item_unit: str
+    check_item_value_type: str = "numeric"
+    check_item_value: float | None = None
+    check_item_text_value: str | None = None
+    check_item_unit: str | None = None
     check_item_page: int
     matched: bool
     confidence: float
@@ -141,13 +150,17 @@ async def create_session(
             id=str(uuid.uuid4()),
             session_id=session_id,
             label=str(item["label"]),
-            value=float(item["value"]),
-            unit=str(item["unit"]),
+            value_type=str(item.get("value_type", "numeric")),
+            value=float(item["value"]) if item.get("value") is not None else None,
+            text_value=item.get("text_value"),
+            formula_value=item.get("formula_value"),
+            unit=str(item["unit"]) if item.get("unit") else None,
             bbox=item.get("bbox"),
             page=int(item["page"]),
             context=str(item["context"]),
             source_hint=str(item["source_hint"]) if item.get("source_hint") else None,
             category=item.get("category"),
+            source_block_ids=item.get("source_block_ids"),
         )
         db.add(check_item)
 
@@ -206,13 +219,17 @@ def get_session_items(session_id: str, db: Session = Depends(get_db)):
                 id=str(item.id),
                 session_id=str(item.session_id),
                 label=str(item.label),
-                value=cast(float, item.value),
-                unit=str(item.unit),
+                value_type=str(item.value_type) if item.value_type else "numeric",
+                value=cast(float | None, item.value),
+                text_value=str(item.text_value) if item.text_value else None,
+                formula_value=str(item.formula_value) if item.formula_value else None,
+                unit=str(item.unit) if item.unit else None,
                 bbox=cast(dict | None, item.bbox),
                 page=cast(int, item.page),
                 context=str(item.context),
                 source_hint=str(item.source_hint) if item.source_hint else None,
                 category=str(item.category) if item.category else None,
+                source_block_ids=cast(list[str] | None, item.source_block_ids),
             )
         )
     return results
@@ -256,8 +273,11 @@ def get_session_results(session_id: str, db: Session = Depends(get_db)):
             if s_item:
                 source_item = SourceItemInfo(
                     label=str(s_item.label),
-                    value=cast(float, s_item.value),
-                    unit=str(s_item.unit),
+                    value_type=str(s_item.value_type) if s_item.value_type else "numeric",
+                    value=cast(float | None, s_item.value),
+                    text_value=str(s_item.text_value) if s_item.text_value else None,
+                    formula_value=str(s_item.formula_value) if s_item.formula_value else None,
+                    unit=str(s_item.unit) if s_item.unit else None,
                     page=cast(int, s_item.page),
                     context_text=str(s_item.context_text),
                     category=str(s_item.category) if s_item.category else None,
@@ -269,8 +289,10 @@ def get_session_results(session_id: str, db: Session = Depends(get_db)):
                 id=str(result.id),
                 check_item_id=str(result.check_item_id),
                 check_item_label=str(check_item.label),
-                check_item_value=cast(float, check_item.value),
-                check_item_unit=str(check_item.unit),
+                check_item_value_type=str(check_item.value_type) if check_item.value_type else "numeric",
+                check_item_value=cast(float | None, check_item.value),
+                check_item_text_value=str(check_item.text_value) if check_item.text_value else None,
+                check_item_unit=str(check_item.unit) if check_item.unit else None,
                 check_item_page=cast(int, check_item.page),
                 matched=bool(result.status == "approved"),
                 confidence=cast(float, result.confidence),
@@ -320,8 +342,11 @@ def update_result_status(
         if s_item:
             source_item = SourceItemInfo(
                 label=str(s_item.label),
-                value=cast(float, s_item.value),
-                unit=str(s_item.unit),
+                value_type=str(s_item.value_type) if s_item.value_type else "numeric",
+                value=cast(float | None, s_item.value),
+                text_value=str(s_item.text_value) if s_item.text_value else None,
+                formula_value=str(s_item.formula_value) if s_item.formula_value else None,
+                unit=str(s_item.unit) if s_item.unit else None,
                 page=cast(int, s_item.page),
                 context_text=str(s_item.context_text),
                 category=str(s_item.category) if s_item.category else None,
@@ -332,8 +357,10 @@ def update_result_status(
         id=str(result.id),
         check_item_id=str(result.check_item_id),
         check_item_label=str(check_item.label),
-        check_item_value=cast(float, check_item.value),
-        check_item_unit=str(check_item.unit),
+        check_item_value_type=str(check_item.value_type) if check_item.value_type else "numeric",
+        check_item_value=cast(float | None, check_item.value),
+        check_item_text_value=str(check_item.text_value) if check_item.text_value else None,
+        check_item_unit=str(check_item.unit) if check_item.unit else None,
         check_item_page=cast(int, check_item.page),
         matched=bool(result.status == "approved"),
         confidence=cast(float, result.confidence),

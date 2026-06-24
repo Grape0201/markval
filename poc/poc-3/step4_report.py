@@ -119,7 +119,7 @@ def generate_summary(data_dir: Path) -> None:
             for h in hallucinated:
                 print(f"     Page {h['page']}: '{h['label']}' → {h['invalid_ids']}")
         else:
-            print(f"\n  ✅ ハルシネーションなし")
+            print("\n  ✅ ハルシネーションなし")
 
         # Bbox 解決できなかったアイテム
         no_bbox = []

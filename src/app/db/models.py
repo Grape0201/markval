@@ -29,11 +29,17 @@ class SourceItem(Base):
     document_id = Column(String(36), ForeignKey("source_documents.id"), nullable=False)
     page = Column(Integer, nullable=False)
     label = Column(String(255), nullable=False)
-    value = Column(Float, nullable=False)
-    unit = Column(String(50), nullable=False)
+    value_type = Column(
+        String(20), nullable=False, default="numeric"
+    )  # "numeric", "name", "formula"
+    value = Column(Float, nullable=True)  # numeric_value (nullable for name/formula)
+    text_value = Column(String, nullable=True)  # name 型の値
+    formula_value = Column(String, nullable=True)  # formula 型の値
+    unit = Column(String(50), nullable=True)
     context_text = Column(String, nullable=False)
     bbox = Column(JSON, nullable=True)  # Store bounding box {x0, y0, x1, y1}
     category = Column(String(100), nullable=True)
+    source_block_ids = Column(JSON, nullable=True)  # ブロック ID リスト
 
     document = relationship("SourceDocument", back_populates="items")
     match_results = relationship(
@@ -65,13 +71,19 @@ class CheckItem(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id = Column(String(36), ForeignKey("check_sessions.id"), nullable=False)
     label = Column(String(255), nullable=False)
-    value = Column(Float, nullable=False)
-    unit = Column(String(50), nullable=False)
+    value_type = Column(
+        String(20), nullable=False, default="numeric"
+    )  # "numeric", "name", "formula"
+    value = Column(Float, nullable=True)  # numeric_value (nullable for name/formula)
+    text_value = Column(String, nullable=True)  # name 型の値
+    formula_value = Column(String, nullable=True)  # formula 型の値
+    unit = Column(String(50), nullable=True)
     bbox = Column(JSON, nullable=True)  # Store bounding box {x0, y0, x1, y1}
     page = Column(Integer, nullable=False)
     context = Column(String, nullable=False)
     source_hint = Column(String(255), nullable=True)
     category = Column(String(100), nullable=True)
+    source_block_ids = Column(JSON, nullable=True)  # ブロック ID リスト
 
     session = relationship("CheckSession", back_populates="check_items")
     match_results = relationship(
