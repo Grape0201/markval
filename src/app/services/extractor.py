@@ -121,18 +121,50 @@ class PageSourceList(BaseModel):
 
 
 def get_llm():
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-    primary_llm = ChatGoogleGenerativeAI(model=model_name, temperature=0.0)
+    llm_provider = os.environ.get("LLM_PROVIDER", "gemini").lower()
 
-    azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
+    if llm_provider == "openai":
+        from langchain_openai import ChatOpenAI
+        from pydantic import SecretStr
 
-    if azure_api_key and azure_endpoint:
+        openai_api_key = os.environ.get("OPENAI_API_KEY")
+        openai_api_base = os.environ.get("OPENAI_API_BASE")
+        openai_model = os.environ.get("OPENAI_MODEL")
+
+        if not openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required when LLM_PROVIDER is 'openai'"
+            )
+        if not openai_model:
+            raise ValueError(
+                "OPENAI_MODEL is required when LLM_PROVIDER is 'openai'"
+            )
+
+        return ChatOpenAI(
+            model=openai_model,
+            api_key=SecretStr(openai_api_key),
+            base_url=openai_api_base,
+            temperature=0.0,
+        )
+
+    elif llm_provider == "azure":
         from langchain_openai import AzureChatOpenAI
         from pydantic import SecretStr
 
-        azure_llm = AzureChatOpenAI(
+        azure_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+        azure_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
+
+        if not azure_api_key or not azure_endpoint:
+            raise ValueError(
+                "AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT are required when LLM_PROVIDER is 'azure'"
+            )
+        if not azure_deployment:
+            raise ValueError(
+                "AZURE_OPENAI_DEPLOYMENT_NAME is required when LLM_PROVIDER is 'azure'"
+            )
+
+        return AzureChatOpenAI(
             azure_deployment=azure_deployment,
             api_version=os.environ.get(
                 "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
@@ -141,9 +173,16 @@ def get_llm():
             api_key=SecretStr(azure_api_key),
             temperature=0.0,
         )
-        return primary_llm.with_fallbacks([azure_llm])
 
-    return primary_llm
+    else:
+        # Default: gemini
+        gemini_model = os.environ.get("GEMINI_MODEL")
+        if not gemini_model:
+            raise ValueError(
+                "GEMINI_MODEL is required when LLM_PROVIDER is 'gemini' (or default)"
+            )
+        return ChatGoogleGenerativeAI(model=gemini_model, temperature=0.0)
+
 
 
 # ---------------------------------------------------------------------------
